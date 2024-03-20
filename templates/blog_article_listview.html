@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %} Blog {% endblock %}
+{% block styles %}{% endblock %}
+
+{% block content %}
+     {% for article_category in object_list %}
+        <ul> 
+            <h2>
+                <li>{{ article_category }}</li>
+            </h2>
+            <p>{{ article_category.description}}</p>
+            <h3>
+                {% for article in article_category.article.all %}
+                <ul>
+                    <li><a href="{{ article.get_absolute_url }}">{{article.title}}</a></li>
+                </ul>
+                {% endfor %}
+            </h3>
+            <br>
+        </ul>
+    {% endfor %}
+
+{% endblock %}
+
+{% block scripts %}{% endblock %}
