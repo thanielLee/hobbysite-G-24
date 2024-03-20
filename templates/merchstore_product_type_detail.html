@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<h1>{% block title %}Merchandise Detail{% endblock %}</h1>
+{% block styles %}{% endblock %}
+
+{% block content %}
+<div id="content">
+  <h2>{{object.name}}</h2>
+  <ul>
+    <li>Type: <span class="productname">{{object.producttype.name}}</span></li>
+      <ul>
+        <li>Price: ₱ {{object.price}}</li>
+        <li>Description: {{object.description}}</li>
+      </ul>
+  </ul>
+</div>
+<h3><a href="/merchstore/items">Go back to Products List</a></h3>
+{% block scripts %}{% endblock %}
+{% endblock %}
