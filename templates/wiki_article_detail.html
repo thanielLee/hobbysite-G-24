@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}{{object.title}}{% endblock %}
+{% block content %}
+    <ul>
+        <li>{{object.entry}}</li>
+        <li>{{object.created_on}}</li>
+        <li>{{object.updated_on}}</li>
+    </ul>
+    <a href="/wiki/articles">Back to Wiki Categories</a>
+ {% endblock %}

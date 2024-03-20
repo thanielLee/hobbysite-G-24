@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<h1>{% block title %}Merchandise Store{% endblock %}</h1>
+{% block styles %}{% endblock %}
+
+{% block content %}
+<div id="content">
+  <h2>Product Types</h2>
+  <ul>
+    {% for type in object_list %}
+      <li><span class="productname">{{type.name}}</span> {{type.description}}
+        <ul>
+          {% for product in type.products.all %}
+            <li> 
+              <a href="{{product.get_absolute_url}}">{{product.name}}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% block scripts %}{% endblock %}
+{% endblock %}
