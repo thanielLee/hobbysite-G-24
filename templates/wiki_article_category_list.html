@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %} Article Categories {% endblock %}
+{% block content %}
+ <ul>
+    {% for article_category in object_list %}
+        <li>{{article_category.name}}</li>
+        <ul>
+            {% for article in article_category.article.all %}
+            <li>
+                <a href = "{{article.get_absolute_url}}">{{article.title}}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+ </ul>
+ {% endblock %}
