@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %} {{ name }} {% endblock %}
+{% block content %}
+    <h1>{{ post.title }}</h1>
+    <h3>Post Category: {{ post.category }}</h3>
+    <p>{{ post.entry }}</p>
+
+    <p>Post created on: {{ post.created_on }} |   Last updated on: {{ post.updated_on }}  </p>
+    
+{% endblock %}
