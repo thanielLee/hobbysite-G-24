@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %} Blog {% endblock %}
+{% block title %} {{article.category}} | {{ article.title }} {% endblock %}
 {% block styles %}{% endblock %}
 
 {% block content %}
-    <h2>{{ article.title }}</h2>
-    <p>{{ article.entry }}</p>
+    <p>{{article.CreatedOn}}</p>
+    <p>{{article.UpdatedOn}}</p>
+    <div>{{ article.entry }}</div>
 {% endblock %}
 
 {% block scripts %}{% endblock %}
