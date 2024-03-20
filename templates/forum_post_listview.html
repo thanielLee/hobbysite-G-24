@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %} {{ name }} {% endblock %}
+{% block content %}
+    <h2>Threads</h2>
+
+    <ul>
+        {% for category in object_list %}
+            <li>{{ category.name }}</li>
+            <ul>
+                {% for post in category.posts.all %}
+                <li><a href="{{ post.get_absolute_url }}">{{ post.title }} | {{ post.category }}  </a></li>
+                {% endfor %}
+            </ul>   
+        {% endfor %}
+    </ul>
+{% endblock %}
