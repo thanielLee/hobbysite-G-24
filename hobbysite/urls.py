@@ -26,5 +26,6 @@ urlpatterns = [
     path('forum/', include('forum.urls', namespace='forum')),
     path('commissions/', include('commissions.urls', namespace='commissions')),
     path('profile/', include('django.contrib.auth.urls')),
-    path('', index)
+    path('', index, name="home"),
+    path('profile/', include('user_management.urls', namespace='profiles'))
 ]
