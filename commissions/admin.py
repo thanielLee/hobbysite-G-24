@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Comment, Commission
+from .models import Job, Commission, JobApplication
 
 class CommentInline(admin.StackedInline):
-    model = Comment
+    model = Job
 
 class CommissionAdmin(admin.ModelAdmin):
     model = Commission

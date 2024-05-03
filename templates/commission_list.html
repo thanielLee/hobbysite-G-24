@@ -1,6 +1,17 @@
 {% extends 'base.html' %}
 {% block title %}Commissions{% endblock %}
 {% block content %}
+    {% if user.is_authenticated %}
+        <ul>
+        {% for user_commission in user_created %}
+            <li><a href="{{user_commission.get_absolute_url}}">{{user_commission.title}}</li>
+        {% endfor %}
+        </ul>
+
+        <a href = "{% url 'commissions:commission_add' %}">Create Commission</a>
+    {% endif %}
+
+
     <ul>
         {% for commission in object_list %}
             <li>
