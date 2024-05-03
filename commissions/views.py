@@ -29,6 +29,8 @@ class CommissionDetailView(DetailView):
     model = Commission
     template_name = 'commission_detail.html'
 
+    
+
 class CommissionCreateView(CreateView):
     model = Commission
     form_class = CommissionForm
