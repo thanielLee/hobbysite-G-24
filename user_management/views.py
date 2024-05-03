@@ -26,3 +26,18 @@ class RegisterProfileView(CreateView):
         user.save()
         login(self.request, user, backend="django.contrib.auth.backends.ModelBackend")
         return response
+
+class UpdateProfileView(UpdateView):
+    model = Profile
+    fields = ['display_name', 'email']
+    template_name = "update_profile.html"
+    success_url = reverse_lazy("home")
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user_profile = form.save()
+        user = user_profile.user
+        user.email = form.cleaned_data.get('email')
+        user.save()
+        user_profile.save()
+        return response

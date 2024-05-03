@@ -8,6 +8,9 @@
     <h1>
         Hobbysite <br>
         {% if user.is_authenticated %}
+            <form method="POST" action="{% url 'profiles:update' user.pk %}">
+                {% csrf_token %}
+            <button type="submit">Update Profile</button>
             <form method="POST" action="{% url 'logout' %}">
                 {% csrf_token %}
             <button type="submit">Logout</button>
