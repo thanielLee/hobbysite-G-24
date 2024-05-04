@@ -63,7 +63,6 @@ class Job(models.Model):
         default = OPEN,
     )
 
-
     def __str__(self):
         return self.role
     

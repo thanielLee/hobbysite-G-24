@@ -13,6 +13,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.forms import formset_factory
 from user_management.models import Profile
+import django.contrib.messages as messages
 import datetime
 
 def index(request):
@@ -92,10 +93,64 @@ class CommissionDetailView(ModelFormMixin, DetailView):
     def get_success_url(self) -> str:
         return reverse_lazy('commissions:commission_list')
     
-class CommissionCreateView(CreateView):
+class CommissionCreateViewTemplate(TemplateView):
+    template_name = 'commission_createview.html'
+    
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        commission_form = CommissionForm()
+        job_formset = JobCreationFormSet(queryset=Job.objects.none())
+        data['form'] = commission_form
+        data['job_formset'] = job_formset
+        data['with_error'] = 0
+        return data
+    
+    def get_success_url(self):
+        return reverse_lazy('commissions:commission_list')
+    
+    def form_valid(self, form, job_formset):
+        form.instance.created_by = self.request.user.Profile
+        form.save()
+        
+        for job_form in job_formset:
+            if 'role' not in job_form.cleaned_data.keys() and 'manpower_required' not in job_form.cleaned_data.keys():
+                        continue
+            job_form.instance.commission_id = form.instance.id
+        job_formset.save()
+        return redirect(self.get_success_url())
+    
+    def form_invalid(self, form, job_formset):
+        messages.error(self.request, "Please fill in empty data")
+        print("WRONG")
+        return self.render_to_response(self.get_context_data(form=form, job_formset=job_formset, with_error=1))
+
+    def post(self, request, *args, **kwargs):
+        commission_form = CommissionForm(data=request.POST)
+        formset = JobCreationFormSet(data=request.POST)
+        
+        if formset.is_valid() and commission_form.is_valid():
+            for form in formset:
+                if form.is_valid():
+                    if 'role' not in form.cleaned_data.keys() and 'manpower_required' not in form.cleaned_data.keys():
+                        continue
+                    if 'role' not in form.cleaned_data.keys() or 'manpower_required' not in form.cleaned_data.keys():
+                        return self.form_invalid(commission_form, formset)
+                else:
+                    return self.form_invalid(commission_form, formset)
+                
+            return self.form_valid(commission_form, formset)
+        
+        return self.form_invalid(commission_form, formset)
+    
+    
+"""class CommissionCreateView(CreateView):
     model = Commission
     form_class = CommissionForm
     template_name = 'commission_createview.html'
+    
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().get(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -110,21 +165,30 @@ class CommissionCreateView(CreateView):
         form.instance.created_by = self.request.user.Profile
         return super().form_valid(form)
     
+    def form_invalid(self, form):
+        messages.error(self.request, "Please fill in empty data")
+        print("WRONG")
+        return self.render_to_response(self.get_context_data(form=form))
+    
     def post(self, request, *args, **kwargs):
-        context = super().post(request, *args, **kwargs)
-        print(self.get_context_data().get('job_formset'))
-        formset = JobCreationFormSet(data=self.get_context_data().get('job_formset'))
-        commission_form = self.get_form()
+        commission_form = super(CommissionCreateView, self).get_form()
+        formset = JobCreationFormSet(request.POST, request.FILES)
         
-
         if formset.is_valid() and commission_form.is_valid():
             for form in formset:
-                form.instance.commission_id = commission_form.instance.id
+                if form.is_valid():
+                    form.instance.commission_id = commission_form.instance.id
+                    if 'role' not in form.cleaned_data.keys() or 'manpower_required' not in form.cleaned_data.keys():
+                        print('oopsie')
+                        return self.form_invalid(commission_form)
+                else:
+                    return self.form_invalid(commission_form)
                 
             formset.save()
-            commission_form.save()
-            return redirect(reverse_lazy('commissions:commission_list'))    
+            print("WHYMAN")
+            return self.form_valid(commission_form)
         
-        return self.render_to_response({'job_formset': formset})
+        print("why", commission_form)
+        return self.form_invalid(commission_form)"""
 
     

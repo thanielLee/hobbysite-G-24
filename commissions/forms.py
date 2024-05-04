@@ -16,10 +16,16 @@ class JobApplicationForm(forms.ModelForm):
         widgets = {'job': HiddenInput(), 'applicant': HiddenInput(),}
 
 class JobCreationForm(forms.ModelForm):
+    role = forms.CharField(required=True, max_length=255)
+    manpower_required = forms.IntegerField(required=True)
+    
+    
     class Meta:
         model = Job
         fields = ['role', 'manpower_required', 'status']
 
 JobCreationFormSet = modelformset_factory(
-    Job, fields=('role', 'manpower_required', 'status'), extra=1
+    Job,
+    form = JobCreationForm,
+    extra=1
 )

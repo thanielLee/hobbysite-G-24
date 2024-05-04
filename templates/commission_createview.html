@@ -4,26 +4,23 @@
 {% block title %}Commissions App{% endblock %}
 {% block heading %} Post Commission {%endblock%}
 {% block content %}
-<form method="POST" enctype="multipart/form-data">
+<form id="form-container" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_div }}
-    <button type="submit">Submit</button>
-</form>
-
-<h1>Create Jobs</h1>
-    <form id="form-container" method="POST">
-        {% csrf_token %}
-        {{ job_formset.management_form   }}
-        {% for form in job_formset %}
+    <h1>Create Jobs</h1>
+        {{ job_formset.management_form }}
+        {% for job_form in job_formset %}
             <div class="job-form">
-                {{form.as_p}}
+                {{job_form.as_div}}
             </div>
         {% endfor %}
         <button id="add-form" type="button">Add Another Job</button><br>
-        <button type="submit">Add Jobs</button>
-    </form>
-    </ul>
+    <button type="submit">Submit</button>
+</form>
 
+{% if with_error == 1 %} 
+    Please fill in or clear the incomplete job fields
+{% endif %}
 {% block scripts %}
     <script>
         let jobForm = document.querySelectorAll(".job-form")
