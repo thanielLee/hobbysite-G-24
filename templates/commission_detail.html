@@ -24,10 +24,13 @@
         </li>
     {% endfor %}
 
-    Total Manpower Required = {{total_manpower_required}}
-    Current Manpower = {{current_manpower}}
-    Open Manpower = {{open_manpower}}
-
     </ul>
-    <a href="/commissions/list">Back to Commissions</a>
+    Total Manpower Required = {{total_manpower_required}}<br>
+    Current Manpower = {{current_manpower}}<br>
+    Open Manpower = {{open_manpower}}<br>
+
+    {% if user.pk == commission_owner %}
+        Put Update View here<br>
+    {% endif %}
+    <a href="/commissions/list"><button>Back to Commissions</button></a>
 {% endblock %}

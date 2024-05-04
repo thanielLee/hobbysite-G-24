@@ -3,11 +3,13 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView, ModelFormMixin
+from django.views.generic.edit import CreateView, ModelFormMixin, UpdateView
+from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Commission, Job, JobApplication
-from .forms import CommissionForm, JobApplicationForm
+from .forms import CommissionForm, JobApplicationForm, JobCreationFormSet
 from django.urls import reverse_lazy
+from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.forms import formset_factory
 from user_management.models import Profile
@@ -48,7 +50,7 @@ class CommissionDetailView(ModelFormMixin, DetailView):
             total_manpower_required += job.manpower_required
             current_job_manpower = 0
             for job_application in job_application_set:
-                if job_application.status == 1:
+                if job_application.status == 1: 
                     commission_current_manpower += 1
                     current_job_manpower += 1
             
@@ -62,11 +64,7 @@ class CommissionDetailView(ModelFormMixin, DetailView):
         cnt = 0
         test = []
         for job in job_set:
-            dat = {'applicant':self.request.user.Profile, 'job':job}
-            new_form = JobApplicationForm(initial=dat)
-            new_form.initial['applicant'] = self.request.user.Profile
-            new_form.initial['job'] = job
-            new_form.save(commit=False)
+            new_form = JobApplicationForm()
             test.append([job, new_form])
             
         
@@ -74,6 +72,7 @@ class CommissionDetailView(ModelFormMixin, DetailView):
         data['total_manpower_required'] = total_manpower_required
         data['current_manpower'] = commission_current_manpower
         data['open_manpower'] = total_manpower_required-commission_current_manpower
+        data['commission_owner'] = commission.created_by.id
         if total_manpower_required-commission_current_manpower == 0:
             commission.status = 2
         return data
@@ -93,14 +92,16 @@ class CommissionDetailView(ModelFormMixin, DetailView):
     def get_success_url(self) -> str:
         return reverse_lazy('commissions:commission_list')
     
-
-    
-    
-
 class CommissionCreateView(CreateView):
     model = Commission
     form_class = CommissionForm
     template_name = 'commission_createview.html'
+    
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        job_formset = JobCreationFormSet(queryset=Job.objects.none())
+        data['job_formset'] = job_formset
+        return data
     
     def get_success_url(self):
         return reverse_lazy('commissions:commission_list')
@@ -109,7 +110,13 @@ class CommissionCreateView(CreateView):
         form.instance.created_by = self.request.user.Profile
         return super().form_valid(form)
     
-    
-    
-    
+    def post(self, *args, **kwargs):
+        formset = JobCreationFormSet(data=self.request.POST)
+        
+        if formset.is_valid():
+            formset.save()
+            return redirect(reverse_lazy('commissions:commission_list'))    
+        
+        return self.render_to_response({'job_formset': formset})
+
     
