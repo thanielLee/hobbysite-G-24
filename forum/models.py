@@ -1,8 +1,9 @@
 from django.db import models
 from django.urls import reverse
+from user_management.models import Profile
 
 # Create your models here.
-class PostCategory(models.Model):
+class ThreadCategory(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
 
@@ -16,12 +17,17 @@ class PostCategory(models.Model):
         ordering = ['name']
 
 
-class Post(models.Model):
+class Thread(models.Model):
     title = models.CharField(max_length=255)
-    category = models.ForeignKey(
-        "PostCategory",
+    author = models.ForeignKey(
+        "Profile",
         on_delete = models.SET_NULL,
-        related_name = "posts",
+        related_name = "profiles"
+    )
+    category = models.ForeignKey(
+        "ThreadCategory",
+        on_delete = models.SET_NULL,
+        related_name = "categories",
         null = True,
     )
     entry = models.TextField()
@@ -36,3 +42,26 @@ class Post(models.Model):
     
     class Meta:
         ordering = ['-created_on']
+
+    
+class Comment(models.Model):
+    author = models.ForeignKey(
+        "Profile",
+        on_delete = models.SET_NULL,
+        related_name = "profiles"
+    )
+    thread = models.ForeignKey(
+        "Thread",
+        on_delete = models.CASCADE,
+        related_name = "threads"
+    )
+    entry = models.TextField()
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+    
+    def get_absolute_url(self):
+        return reverse('forum:thread-detail', args=[str(self.pk)])
+    
+    class Meta:
+        ordering = ['created_on']
+       
