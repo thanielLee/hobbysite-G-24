@@ -110,11 +110,19 @@ class CommissionCreateView(CreateView):
         form.instance.created_by = self.request.user.Profile
         return super().form_valid(form)
     
-    def post(self, *args, **kwargs):
-        formset = JobCreationFormSet(data=self.request.POST)
+    def post(self, request, *args, **kwargs):
+        context = super().post(request, *args, **kwargs)
+        print(self.get_context_data().get('job_formset'))
+        formset = JobCreationFormSet(data=self.get_context_data().get('job_formset'))
+        commission_form = self.get_form()
         
-        if formset.is_valid():
+
+        if formset.is_valid() and commission_form.is_valid():
+            for form in formset:
+                form.instance.commission_id = commission_form.instance.id
+                
             formset.save()
+            commission_form.save()
             return redirect(reverse_lazy('commissions:commission_list'))    
         
         return self.render_to_response({'job_formset': formset})
