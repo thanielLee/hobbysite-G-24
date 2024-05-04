@@ -100,9 +100,18 @@ class CommissionCreateViewTemplate(TemplateView):
         data = super().get_context_data(**kwargs)
         commission_form = CommissionForm()
         job_formset = JobCreationFormSet(queryset=Job.objects.none())
+        error = 0
+        if 'form' in kwargs.keys():
+            commission_form = kwargs['form']
+            
+        if 'job_formset' in kwargs.keys():
+            job_formset = kwargs['job_formset']
+        
+        if 'with_error' in kwargs.keys():
+            error = kwargs['with_error']
         data['form'] = commission_form
         data['job_formset'] = job_formset
-        data['with_error'] = 0
+        data['with_error'] = error
         return data
     
     def get_success_url(self):
