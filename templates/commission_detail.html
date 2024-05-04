@@ -4,21 +4,30 @@
 {% block content %}
     <ul>
         <li>{{object.description}}</li>
-        <li>{{object.people_required}}</li>
         <li>{{object.created_on}}</li>
         <li>{{object.updated_on}}</li>
+        <li>{{object.created_by}}</li>
+        <li>{{object.status}}</li>
     </ul>
 
-    <h3>Comments</h3>
+    Jobs:
     <ul>
-        {% for comment in object.comment.all %}
-        <li>
-            Entry: {{comment.entry}}<br>
-            Created on: {{comment.created_on}}<br>
-            Updated on: {{comment.updated_on}}<br>
-        </li> <br>
-        {% endfor %}
-    </ul>
+    {% for job in jobs %}
+        <li>{{job.0.role}} - Manpower Required: {{job.0.manpower_required}} Current Manpower: {{job.0.current_manpower}} Open Manpower: {{job.0.open_manpower}} Status: {{job.0.status}}<br>
+        {% if user.is_authenticated and job.0.open_manpower > 0 %}
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ job.1.as_p }}
+                <button type="submit">Submit</button>
+            </form>
+        {% endif %}
+        </li>
+    {% endfor %}
 
+    Total Manpower Required = {{total_manpower_required}}
+    Current Manpower = {{current_manpower}}
+    Open Manpower = {{open_manpower}}
+
+    </ul>
     <a href="/commissions/list">Back to Commissions</a>
 {% endblock %}

@@ -11,7 +11,6 @@ class Commission(models.Model):
     
     title = models.CharField(max_length=255)
     description = models.TextField()
-    people_required = models.IntegerField()
     
     STATUS_CHOICES = (
         (OPEN, "Open"),
@@ -23,8 +22,6 @@ class Commission(models.Model):
         choices = STATUS_CHOICES,
         default = OPEN
     )
-    
-    
     
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
@@ -53,21 +50,31 @@ class Job(models.Model):
     
     commission = models.ForeignKey(
         Commission,
-        related_name="Job",
+        related_name="jobs",
         on_delete=models.CASCADE
     )
     
     role = models.CharField(max_length=255)
     manpower_required = models.IntegerField()
-    status = models.CharField(
+    current_manpower = models.IntegerField(default=0)
+    open_manpower = models.IntegerField(default=0)
+    status = models.IntegerField(
         choices = STATUS_CHOICES,
         default = OPEN,
-        max_length=15
     )
 
 
     def __str__(self):
-        return self.entry
+        return self.role
+    
+    def modify_open_manpower(self, value):
+        self.open_manpower = value
+        self.save()
+    
+    def modify_current_manpower(self, value):
+        self.current_manpower = value
+        self.modify_open_manpower(self.manpower_required-value)
+        self.save()
     
     
     class Meta:
@@ -96,10 +103,9 @@ class JobApplication(models.Model):
         (REJECTED, "Rejected")
     )
     
-    status = models.CharField(
+    status = models.IntegerField(
         choices = STATUS_CHOICES,
         default = PENDING,
-        max_length=15
     )
     
     applied_on = models.DateTimeField(auto_now_add=True)
