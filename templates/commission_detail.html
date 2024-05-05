@@ -14,8 +14,13 @@
     <ul>
     {% for job in jobs %}
         <li>{{job.0.role}} - Manpower Required: {{job.0.manpower_required}} Current Manpower: {{job.0.current_manpower}} Open Manpower: {{job.0.open_manpower}} Status: {{job.0.status}}<br>
-        {% if job.0.open_manpower > 0 %}
-            {% if job.2 == 1 %}
+            {% if job.0 in jobs_applied_by_user %}
+                {% for job_application in job.0.job_applications.all %}
+                    {% if job_application.applicant == user.Profile %}
+                        Status: {{job_application.get_status_display}}<br>
+                    {% endif %}
+                {% endfor %}
+            {% elif job.0.open_manpower > 0 %}
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ job.1.as_div }}
@@ -23,7 +28,6 @@
                     <button type="submit">Submit</button>
                 </form>
             {% endif %}
-        {% endif %}
         </li>
     {% endfor %}
 
@@ -33,7 +37,7 @@
     Open Manpower = {{open_manpower}}<br>
 
     {% if user.pk == commission_owner %}
-        Put Update View here<br>
+        <form method="POST" enctype="multipart/form-data"><br>
     {% endif %}
     <a href="/commissions/list"><button>Back to Commissions</button></a>
 {% endblock %}

@@ -36,7 +36,6 @@ class CommissionListView(ListView):
             return super().get_context_data(**kwargs)
         
 class CommissionTemplateDetailView(TemplateView):
-
     template_name = 'commission_detail.html'
 
     def dispatch(self, request, *args, **kwargs):
@@ -57,6 +56,14 @@ class CommissionTemplateDetailView(TemplateView):
         commission_current_manpower = 0
         job_set = Job.objects.filter(commission=commission)
         formset = formset_factory(JobApplicationForm)
+        job_applied_by_user = []
+
+        STATUS_CHOICES = {
+            0: "Pending",
+            1: "Accepted",
+            2: "Rejected"
+        }
+        
         for job in job_set:
             job_application_set = JobApplication.objects.filter(job = job)
             total_manpower_required += job.manpower_required
@@ -71,10 +78,18 @@ class CommissionTemplateDetailView(TemplateView):
             if job.open_manpower == 0:
                 job.status = 2      
         
-        
-        cnt = 0
         test = []
+        print(job_set)
         for job in job_set:
+            print(job)
+            if self.request.user.is_authenticated:
+                print(1)
+                for job_application in JobApplication.objects.filter(job=job):
+                    print(job_application.status, job_application.applicant, self.request.user.Profile)
+                    if job_application.applicant == self.request.user.Profile:
+                        print(2)
+                        job_applied_by_user.append(job)
+
             new_form = JobApplicationForm()
             if job.open_manpower > 0:
                 submit = 1
@@ -88,6 +103,9 @@ class CommissionTemplateDetailView(TemplateView):
         data['current_manpower'] = commission_current_manpower
         data['open_manpower'] = total_manpower_required-commission_current_manpower
         data['commission_owner'] = commission.created_by.id
+        data['jobs_applied_by_user'] = job_applied_by_user
+        print(job_applied_by_user)
+        data['status_choice'] = STATUS_CHOICES
         if total_manpower_required-commission_current_manpower == 0:
             commission.status = 2
         return data
