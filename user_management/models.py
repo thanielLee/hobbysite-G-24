@@ -18,6 +18,9 @@ class Profile(models.Model):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         user_profile = Profile(user=instance)
+        user_profile.email = instance.email
+        if instance.is_superuser:
+            user_profile.display_name = instance.username
         user_profile.save()
 
 post_save.connect(create_user_profile, sender=User)
