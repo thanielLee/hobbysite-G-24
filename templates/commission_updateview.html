@@ -7,11 +7,27 @@
 <form id="form-container" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_div }}
-    <h1>Create Jobs</h1>
-        {{ job_formset.management_form }}
+    <h1>Update Jobs</h1>
         {% for job_form in job_formset %}
-            <div class="job-form">
+            <div class="job-form-update">
                 {{job_form.as_div}}<br>
+                
+                <div class="job-applications">
+                    <ul>
+                    {% for job_application in job_applications %}
+                        {% if job_application.job.value == job_form.instance.id %}
+                            <li>{{job_application.as_div}}</li><br>
+                        {% endif %}
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
+    <h1>Create Jobs</h1>
+        {{ new_jobs.management_form }}
+        {% for job_form in new_jobs %}
+            <div class="job-form">
+                {{job_form.as_div}}
             </div>
         {% endfor %}
         <button id="add-form" type="button">Add Another Job</button><br>

@@ -102,7 +102,7 @@ class JobApplication(models.Model):
         (REJECTED, "Rejected")
     )
     
-    status = models.IntegerField(
+    application_status = models.IntegerField(
         choices = STATUS_CHOICES,
         default = PENDING,
     )
@@ -110,6 +110,6 @@ class JobApplication(models.Model):
     applied_on = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        ordering = ['-status', '-applied_on']
+        ordering = ['-application_status', '-applied_on']
 
     
