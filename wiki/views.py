@@ -12,3 +12,11 @@ class WikiListView(ListView):
 class WikiDetailView(DetailView):
 	model = Article
 	template_name = "wiki_article_detail.html"
+
+class WikiCreateView(CreateView):
+	model = Article
+	template_name = "wiki_article_create.html"
+
+class WikiUpdateView(UpdateView):
+	model = Article
+	template_name = "wiki_article_update.html"
