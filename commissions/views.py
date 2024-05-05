@@ -7,13 +7,15 @@ from django.views.generic.edit import CreateView, ModelFormMixin, UpdateView
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Commission, Job, JobApplication
-from .forms import CommissionForm, JobApplicationForm, JobCreationFormSet
-from django.urls import reverse_lazy
+from .forms import CommissionForm, JobApplicationForm, JobCreationFormSet, JobApplicationFormSet
+from django.urls import reverse_lazy, reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.forms import formset_factory
 from user_management.models import Profile
 import django.contrib.messages as messages
+from django.contrib.auth.decorators import login_required
 import datetime
 
 def index(request):
@@ -33,15 +35,24 @@ class CommissionListView(ListView):
         else:
             return super().get_context_data(**kwargs)
         
+class CommissionTemplateDetailView(TemplateView):
 
-class CommissionDetailView(ModelFormMixin, DetailView):
-    model = Commission
     template_name = 'commission_detail.html'
-    form_class = JobApplicationForm
-    
+
+    def dispatch(self, request, *args, **kwargs):
+        job_application_data = request.session.get('temp_form')
+        if job_application_data:
+            new_form = JobApplicationForm()
+            new_job_application = new_form.save(commit=False)
+            user = self.request.user
+            new_job_application.job = Job.objects.get(id=job_application_data['job'])
+            new_job_application.applicant = user.Profile
+            new_job_application.save()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        commission = self.get_object()
+        data = super().get_context_data(**kwargs)
+        commission = Commission.objects.get(id=data['pk'])
         total_manpower_required = 0
         commission_current_manpower = 0
         job_set = Job.objects.filter(commission=commission)
@@ -60,15 +71,18 @@ class CommissionDetailView(ModelFormMixin, DetailView):
             if job.open_manpower == 0:
                 job.status = 2      
         
-        data = super().get_context_data(**kwargs)
         
         cnt = 0
         test = []
         for job in job_set:
             new_form = JobApplicationForm()
-            test.append([job, new_form])
+            if job.open_manpower > 0:
+                submit = 1
+            else:
+                submit = 0
+            test.append([job, new_form, submit, job.id])
             
-        
+        data['object'] = commission
         data['jobs'] = test
         data['total_manpower_required'] = total_manpower_required
         data['current_manpower'] = commission_current_manpower
@@ -77,18 +91,32 @@ class CommissionDetailView(ModelFormMixin, DetailView):
         if total_manpower_required-commission_current_manpower == 0:
             commission.status = 2
         return data
-    
+
     def form_valid(self, form):
-        return super().form_valid(form)
-    
+        form.save()
+        return HttpResponseRedirect(self.request.path_info)
     def post(self, request, *args, **kwargs):
-        form = self.get_form()
-        form.instance.applicant = Profile.objects.get(id=int(form['applicant'].value()))
-        form.instance.job = Job.objects.get(id=int(form['job'].value()))
-        if form.is_valid():
-            return self.form_valid(form)
+        cur_job = Job.objects.get(id=int(request.POST['hidden_job_id']))
+        cur_data = request.POST.copy()
+        cur_data['job'] = cur_job
+        if not self.request.user.is_authenticated:
+            request.session['temp_form'] = {
+                'job' : cur_job.id
+            }
+            login_url = reverse('login') + '?next=' + request.get_full_path()
+            return redirect(login_url)
+        
+        cur_data['applicant'] = self.request.user.Profile
+        print(cur_data)
+        job_application_form = JobApplicationForm(cur_data)
+        print(self.request.user.Profile.id, cur_job.id)
+        print(job_application_form.data)
+        print(job_application_form)
+        print("yes", job_application_form.is_valid())
+        if job_application_form.is_valid():
+            return self.form_valid(job_application_form)
         else:
-            return self.form_invalid(form)
+            return self.form_invalid(job_application_form)
         
     def get_success_url(self) -> str:
         return reverse_lazy('commissions:commission_list')
@@ -118,7 +146,7 @@ class CommissionCreateViewTemplate(TemplateView):
         return reverse_lazy('commissions:commission_list')
     
     def form_valid(self, request, form, job_formset):
-        form.instance.created_by = request.user
+        form.instance.created_by = request.user.Profile     
         form.save()
         for job_form in job_formset:
             if 'role' not in job_form.cleaned_data.keys() and 'manpower_required' not in job_form.cleaned_data.keys():
@@ -138,6 +166,7 @@ class CommissionCreateViewTemplate(TemplateView):
         
         if formset.is_valid() and commission_form.is_valid():
             for form in formset:
+                print(form.data)
                 if form.is_valid():
                     if 'role' not in form.cleaned_data.keys() and 'manpower_required' not in form.cleaned_data.keys():
                         continue
@@ -197,6 +226,69 @@ class CommissionCreateViewTemplate(TemplateView):
             return self.form_valid(commission_form)
         
         print("why", commission_form)
-        return self.form_invalid(commission_form)"""
+        return self.form_invalid(commission_form)
+        
+        
+        
+        class CommissionDetailView(ModelFormMixin, DetailView):
+    model = Commission
+    template_name = 'commission_detail.html'
+    form_class = JobApplicationForm
+    
+    
+
+    def get_context_data(self, **kwargs):
+        commission = self.get_object()
+        total_manpower_required = 0
+        commission_current_manpower = 0
+        job_set = Job.objects.filter(commission=commission)
+        formset = formset_factory(JobApplicationForm)
+        for job in job_set:
+            job_application_set = JobApplication.objects.filter(job = job)
+            total_manpower_required += job.manpower_required
+            current_job_manpower = 0
+            for job_application in job_application_set:
+                if job_application.status == 1: 
+                    commission_current_manpower += 1
+                    current_job_manpower += 1
+            
+            job.modify_current_manpower(current_job_manpower)
+            job.open_manpower =  job.manpower_required - current_job_manpower
+            if job.open_manpower == 0:
+                job.status = 2      
+        
+        data = super().get_context_data(**kwargs)
+        
+        cnt = 0
+        test = []
+        for job in job_set:
+            new_form = JobApplicationForm()
+            test.append([job, new_form])
+            
+        
+        data['jobs'] = test
+        data['total_manpower_required'] = total_manpower_required
+        data['current_manpower'] = commission_current_manpower
+        data['open_manpower'] = total_manpower_required-commission_current_manpower
+        data['commission_owner'] = commission.created_by.id
+        if total_manpower_required-commission_current_manpower == 0:
+            commission.status = 2
+        return data
+    
+    def form_valid(self, form):
+        return super().form_valid(form)
+    
+    def post(self, request, *args, **kwargs):
+
+        form = self.get_form()
+        form.instance.applicant = Profile.objects.get(id=int(form['applicant'].value()))
+        form.instance.job = Job.objects.get(id=int(form['job'].value()))
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+        
+    def get_success_url(self) -> str:
+        return reverse_lazy('commissions:commission_list')"""
 
     

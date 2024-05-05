@@ -14,12 +14,15 @@
     <ul>
     {% for job in jobs %}
         <li>{{job.0.role}} - Manpower Required: {{job.0.manpower_required}} Current Manpower: {{job.0.current_manpower}} Open Manpower: {{job.0.open_manpower}} Status: {{job.0.status}}<br>
-        {% if user.is_authenticated and job.0.open_manpower > 0 %}
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ job.1.as_p }}
-                <button type="submit">Submit</button>
-            </form>
+        {% if job.0.open_manpower > 0 %}
+            {% if job.2 == 1 %}
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ job.1.as_div }}
+                    <input type="hidden" id="job_id_{{job.3}}" name="hidden_job_id" value="{{job.3}}">
+                    <button type="submit">Submit</button>
+                </form>
+            {% endif %}
         {% endif %}
         </li>
     {% endfor %}

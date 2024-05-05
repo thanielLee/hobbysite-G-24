@@ -13,7 +13,7 @@ class JobApplicationForm(forms.ModelForm):
         model = JobApplication
         fields = "__all__"
         exclude = ["status"]
-        widgets = {'job': HiddenInput(), 'applicant': HiddenInput(),}
+        widgets = {'job': HiddenInput(), 'applicant': HiddenInput()} 
 
 class JobCreationForm(forms.ModelForm):
     role = forms.CharField(required=True, max_length=255)
@@ -28,4 +28,9 @@ JobCreationFormSet = modelformset_factory(
     Job,
     form = JobCreationForm,
     extra=1
+)
+
+JobApplicationFormSet = modelformset_factory(
+    JobApplication,
+    form = JobApplicationForm
 )
