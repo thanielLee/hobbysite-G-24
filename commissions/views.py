@@ -117,10 +117,9 @@ class CommissionCreateViewTemplate(TemplateView):
     def get_success_url(self):
         return reverse_lazy('commissions:commission_list')
     
-    def form_valid(self, form, job_formset):
-        form.instance.created_by = self.request.user.Profile
+    def form_valid(self, request, form, job_formset):
+        form.instance.created_by = request.user
         form.save()
-        
         for job_form in job_formset:
             if 'role' not in job_form.cleaned_data.keys() and 'manpower_required' not in job_form.cleaned_data.keys():
                         continue
@@ -147,7 +146,7 @@ class CommissionCreateViewTemplate(TemplateView):
                 else:
                     return self.form_invalid(commission_form, formset)
                 
-            return self.form_valid(commission_form, formset)
+            return self.form_valid(request, commission_form, formset)
         
         return self.form_invalid(commission_form, formset)
     
