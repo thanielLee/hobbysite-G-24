@@ -1,3 +1,4 @@
+from django.shortcuts import redirect
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
@@ -5,8 +6,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 
 from .models import Article, ArticleCategory
-from .forms import ArticleForm
+from .forms import ArticleForm, CommentForm
 from user_management.models import Profile
+from hobbysite import settings
+
 
 class ArticleListView(ListView):
     model = ArticleCategory
@@ -15,7 +18,7 @@ class ArticleListView(ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            author =  Profile.objects.get(user=self.request.user)
+            author = Profile.objects.get(user=self.request.user)
             ctx['articlesByAuthor'] = Article.objects.filter(author=author)
         return ctx
 
@@ -27,26 +30,27 @@ class ArticleDetailView(DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         article = self.get_object()
+        author = article.author
+        ctx['articlesByAuthor'] = Article.objects.filter(author=author)
         if self.request.user.is_authenticated:
-             author = Profile.objects.get(user=self.request.user)
+             author = article.author
              ctx['articlesByAuthor'] = Article.objects.filter(author=author)
-             ctx['viewer'] = author
-             ctx['form'] = CommentForm(initial={'author': author, 'article': article})
+             ctx['user'] = author
+             ctx['form'] = CommentForm(initial={'user': author, 'article': article})
         return ctx
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, **kwargs):
         form = CommentForm(request.POST)
+        article = self.get_object()
         if form.is_valid():
             comment = form.save(commit=False)
             comment.author = Profile.objects.get(user=self.request.user)
-            comment.article = self.get_object()
+            comment.article = article
             comment.save()
             return redirect('blog:article-detail', pk=article.pk)
         ctx = self.get_context_data(**kwargs)
         return self.render_to_response(ctx)
-        
-        #if self.request.user.Profile == author:     #differentiate between viewer and autho 
-             
+
 
 class ArticleCreateView(LoginRequiredMixin, CreateView):
     model = Article

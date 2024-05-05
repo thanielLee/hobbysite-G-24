@@ -5,8 +5,8 @@ from .models import ArticleCategory, Article, Comment
 class ArticleForm(forms.ModelForm):
     class Meta:
         model = Article
-        fields = ['title','entry','headerImage']
-        #category = forms.Select(ArticleCategory)
+        #fields = ['title','category','entry','headerImage',]
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
