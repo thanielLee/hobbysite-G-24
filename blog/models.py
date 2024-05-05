@@ -1,7 +1,8 @@
 from django.db import models
 from django.urls import reverse
+from user_management.models import Profile
 
-# Create your models here.
+
 class ArticleCategory(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
@@ -18,6 +19,13 @@ class ArticleCategory(models.Model):
 
 class Article(models.Model):
     title = models.CharField(max_length=255)
+    author = models.ForeignKey(
+        Profile,
+        on_delete=models.SET_NULL,
+        related_name='articleAuthor',
+        null=True
+    )
+    
     category = models.ForeignKey(
         ArticleCategory, 
         on_delete=models.SET_NULL, 
@@ -26,8 +34,9 @@ class Article(models.Model):
     )
 
     entry = models.TextField()
-    CreatedOn = models.DateTimeField(auto_now_add=True)
-    UpdateOn = models.DateTimeField(auto_now=True)
+    headerImage = models.ImageField(upload_to='images/', null=True, blank=True)
+    createdOn = models.DateTimeField(auto_now_add=True)
+    updatedOn = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -36,4 +45,26 @@ class Article(models.Model):
         return reverse('blog:article-detail', args=[self.pk])
 
     class Meta:
-        ordering = ['-CreatedOn']
+        ordering = ['-createdOn']
+
+
+class Comment(models.Model):
+    author = models.ForeignKey(
+        Profile,
+        on_delete=models.SET_NULL,
+        related_name='commentAuthor',
+        null=True
+    )
+
+    article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+
+    entry = models.TextField()
+    createdOn = models.DateTimeField(auto_now_add=True)
+    updatedOn = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['createdOn']
