@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %} {{ name }} {% endblock %}
+
+{% block content %}
+    <h1>{{ thread.title }}</h1>
+    <h3>Thread Category: {{ thread.category }}</h3>
+
+    <a href="{% url 'forum:thread-list' %}">Back to Thread List.</a>
+    <br>
+    <p>{{ thread.entry }}</p>
+
+    <p>Thread created on: {{ thread.created_on }} |   Last updated on: {{ thread.updated_on }}  </p>
+    
+    {% if user.pk == thread_owner %}<!--check if this works; checking for logged user-->
+        <a href="{% url 'forum:thread-edit' %}">Edit your thread.</a>
+    {% endif %}
+
+    <!--comments-->
+    {% for comment in thread_comments %}
+            <div><p>{{ comment }}</p></div>
+    {% endfor %}
+
+    <!--comment form-->
+    {% if request.user.is_authenticated %}
+    <h3>Comment</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Post</button>
+        </form>
+    {% endif %}
+
+    <br>
+    <div>
+        <h3>Similar Threads:</h3>
+        <ul>
+        {% for thread in category.categories.all %}
+            {% if thread.category == user.pk.thread.category %}<!--no way in hell this is right. super?-->
+                <li><a href="{{ thread.get_absolute_url }}">{{ thread.title }}</a></li>
+            {% endif %}
+        {% endfor %}
+        </ul>
+    </div>>
+{% endblock %}
+

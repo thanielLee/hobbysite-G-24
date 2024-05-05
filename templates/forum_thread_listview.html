@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %} {{ name }} {% endblock %}
+{% block content %}
+    <h2>Threads</h2>
+
+    {% if request.user.is_authenticated %}
+        <h3>My Threads:</h3>
+        <ul>
+            {% for user_thread in user_created %}
+                <li><a href="{{ user_thread.get_absolute_url }}">{{user_thread.title}}</a></li>
+            {% endfor %}
+        </ul>
+        <br>
+        <h3>Other Threads:</h3>
+        <ul>
+        {% for category in object_list %}
+            <li>{{ category.name }}</li>
+            <ul>
+                {% for thread in category.categories.all %}
+                    {% if thread not in thread_owner %} <!--check if the !== is correct-->
+                        <li><a href="{{ thread.get_absolute_url }}">{{ thread.title }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>   
+        {% endfor %}
+        </ul>
+
+        <a href="{% url 'forum:thread-create' %}">Create New Thread.</a> <!--dk if correct-->
+
+    {% else %}
+    <ul>    
+        {% for category in object_list %}
+            <li>{{ category.name }}</li>
+            <ul>
+                {% for thread in category.categories.all %}
+                    <li><a href="{{ thread.get_absolute_url }}">{{ thread.title }}</a></li>
+                {% endfor %}
+            </ul>   
+        {% endfor %}
+    </ul>
+
+    {% endif %}
+{% endblock %}

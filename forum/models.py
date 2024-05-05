@@ -20,12 +20,13 @@ class ThreadCategory(models.Model):
 class Thread(models.Model):
     title = models.CharField(max_length=255)
     author = models.ForeignKey(
-        "Profile",
+        Profile,
         on_delete = models.SET_NULL,
-        related_name = "profiles"
+        related_name = "profiles",
+        null = True
     )
     category = models.ForeignKey(
-        "ThreadCategory",
+        ThreadCategory,
         on_delete = models.SET_NULL,
         related_name = "categories",
         null = True,
@@ -46,21 +47,19 @@ class Thread(models.Model):
     
 class Comment(models.Model):
     author = models.ForeignKey(
-        "Profile",
+        Profile,
         on_delete = models.SET_NULL,
-        related_name = "profiles"
-    )
+        related_name = "comment_author",
+        null = True
+        )
     thread = models.ForeignKey(
-        "Thread",
+        Thread,
         on_delete = models.CASCADE,
-        related_name = "threads"
+        related_name = "parent_thread"
     )
     entry = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
-    
-    def get_absolute_url(self):
-        return reverse('forum:thread-detail', args=[str(self.pk)])
     
     class Meta:
         ordering = ['created_on']
