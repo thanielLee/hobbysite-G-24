@@ -15,6 +15,12 @@ class JobApplicationForm(forms.ModelForm):
         exclude = ["status"]
         widgets = {'job': HiddenInput(), 'applicant': HiddenInput()} 
 
+class JobApplicationUpdateForm(forms.ModelForm):
+    class Meta:
+        model = JobApplication
+        fields = "__all__"
+        widgets = {'job': HiddenInput(), 'applicant': HiddenInput()} 
+
 class JobCreationForm(forms.ModelForm):
     role = forms.CharField(required=True, max_length=255)
     manpower_required = forms.IntegerField(required=True)
@@ -22,7 +28,7 @@ class JobCreationForm(forms.ModelForm):
     
     class Meta:
         model = Job
-        fields = ['role', 'manpower_required', 'status']
+        fields = ['role', 'manpower_required']
 
 JobCreationFormSet = modelformset_factory(
     Job,

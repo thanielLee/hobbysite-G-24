@@ -10,7 +10,7 @@ from .models import Commission, Job, JobApplication
 from .forms import CommissionForm, JobApplicationForm, JobCreationFormSet, JobApplicationFormSet
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.forms import formset_factory
 from user_management.models import Profile
@@ -34,6 +34,72 @@ class CommissionListView(ListView):
             return data
         else:
             return super().get_context_data(**kwargs)
+
+class CommissionTemplateUpdateView(TemplateView):
+    template_name = 'commission_updateview.html'
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        commission = get_object_or_404(Commission, id=self.kwargs["commission_pk"])
+
+        data = {
+            'title' : commission.title,
+            'description' : commission.description,
+            'status' : commission.status
+        }
+        commission_form = CommissionForm(data=data)
+        job_formset = JobCreationFormSet(queryset=Job.objects.filter(commission=commission))
+        error = 0
+        if 'form' in kwargs.keys():
+            commission_form = kwargs['form']
+            
+        if 'job_formset' in kwargs.keys():
+            job_formset = kwargs['job_formset']
+        
+        if 'with_error' in kwargs.keys():
+            error = kwargs['with_error']
+        print(job_formset)
+        data['form'] = commission_form
+        data['job_formset'] = job_formset
+        data['with_error'] = error
+        return data
+    
+    def get_success_url(self):
+        return reverse_lazy('commissions:commission_list')
+    
+    def form_valid(self, request, form, job_formset):
+        form.instance.created_by = request.user.Profile     
+        form.save()
+        for job_form in job_formset:
+            if 'role' not in job_form.cleaned_data.keys() and 'manpower_required' not in job_form.cleaned_data.keys():
+                        continue
+            job_form.instance.commission_id = form.instance.id
+        job_formset.save()
+        return redirect(self.get_success_url())
+    
+    def form_invalid(self, form, job_formset):
+        messages.error(self.request, "Please fill in empty data")
+        print("WRONG")
+        return self.render_to_response(self.get_context_data(form=form, job_formset=job_formset, with_error=1))
+
+    def post(self, request, *args, **kwargs):
+        commission_form = CommissionForm(data=request.POST)
+        formset = JobCreationFormSet(data=request.POST)
+        
+        if formset.is_valid() and commission_form.is_valid():
+            for form in formset:
+                print(form.data)
+                if form.is_valid():
+                    if 'role' not in form.cleaned_data.keys() and 'manpower_required' not in form.cleaned_data.keys():
+                        continue
+                    if 'role' not in form.cleaned_data.keys() or 'manpower_required' not in form.cleaned_data.keys():
+                        return self.form_invalid(commission_form, formset)
+                else:
+                    return self.form_invalid(commission_form, formset)
+                
+            return self.form_valid(request, commission_form, formset)
+        
+        return self.form_invalid(commission_form, formset)
         
 class CommissionTemplateDetailView(TemplateView):
     template_name = 'commission_detail.html'
@@ -79,17 +145,7 @@ class CommissionTemplateDetailView(TemplateView):
                 job.status = 2      
         
         test = []
-        print(job_set)
         for job in job_set:
-            print(job)
-            if self.request.user.is_authenticated:
-                print(1)
-                for job_application in JobApplication.objects.filter(job=job):
-                    print(job_application.status, job_application.applicant, self.request.user.Profile)
-                    if job_application.applicant == self.request.user.Profile:
-                        print(2)
-                        job_applied_by_user.append(job)
-
             new_form = JobApplicationForm()
             if job.open_manpower > 0:
                 submit = 1
@@ -103,7 +159,6 @@ class CommissionTemplateDetailView(TemplateView):
         data['current_manpower'] = commission_current_manpower
         data['open_manpower'] = total_manpower_required-commission_current_manpower
         data['commission_owner'] = commission.created_by.id
-        data['jobs_applied_by_user'] = job_applied_by_user
         print(job_applied_by_user)
         data['status_choice'] = STATUS_CHOICES
         if total_manpower_required-commission_current_manpower == 0:

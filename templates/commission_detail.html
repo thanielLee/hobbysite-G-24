@@ -37,7 +37,7 @@
     Open Manpower = {{open_manpower}}<br>
 
     {% if user.pk == commission_owner %}
-        <form method="POST" enctype="multipart/form-data"><br>
+        <a href="{% url 'commissions:commission_update' commission_pk=object.pk %}"><button>Update Commission</button></a><br>
     {% endif %}
     <a href="/commissions/list"><button>Back to Commissions</button></a>
 {% endblock %}
