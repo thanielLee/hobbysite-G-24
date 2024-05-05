@@ -1,36 +1,62 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %} {{article.category}} | {{ article.title }} {% endblock %}
+{% block title %}{% endblock %}
 {% block styles %}{% endblock %}
 
 {% block content %}
-    <h5>{{ article_category.description}}</h5>
-    <p>{{article.CreatedOn}}</p>
-    <p>{{article.UpdatedOn}}</p>
-
     {% if article.headerImage %}
-        <img src="{{ article.headerImage.url }}" alt="image">
+        <img src="{{ article.headerImage.url }}" alt="img">
     {% endif %}
 
-    <div>{{ article.entry }}</div>
+    <h1>{{article.category}} | {{ article.title }} by {{ article.author }}</h1>
+    <p>{{ article.category.description}}</p>
+    <div><small>created: {{article.createdOn}} | last updated: {{article.updatedOn}}</small></div>
 
-    {% if article.author %}
+    <br><p>{{ article.entry }}</p>
+
+    {% if user == article.author %}
         <a href="{% url 'blog:article-update' pk=view.kwargs.pk %}"><button>Edit Article</button></a>
     {% endif %} 
 
     {% if request.user.is_authenticated %}
-    <h3>Comment</h3>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Post</button>
-        </form>
+        <br>
+        <br>
+        <h3>Write a comment:</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Post</button>
+            </form>
     {% endif %}
-
-    <a href="{{% url 'blog:article-list' %}}"><button>Back to Article List</button></a>
+    
+    <br><h3>Comments:</h3>
+        {% for comment in article.comments.all %}
+            <h4>{{ comment.author }}</h4>
+            <div>{{ comment.entry }}</div>
+            <p><small>created: {{ comment.createdOn }} | last edited: {{ comment.updatedOn }}</small></p>
+        {% empty %}
+            <div>No comments yet</div>
+        {% endfor %}
 
     
-{% endblock %}
+    <br><h3>Other Articles by {{ article.author }}:</h3>
+    <ul>
+        {% for article in articlesByAuthor %}
+            {% if forloop.counter0 <= 2 %}
+                {% if article.pk != object.pk %}
+                    <li><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></li>
+                {% endif %} 
+            {% endif %}
+        {% empty %}
+            <li>No other articles</li>
+        {% endfor %} 
+    </ul>    
 
+    <!--<br><h3>Gallery:</h3>-->
+
+    <br><a href="{% url 'blog:article-list' %}"><button>🠜 Return to Article List</button></a>
+
+{% endblock %}
 
 {% block scripts %}{% endblock %}
