@@ -4,9 +4,33 @@
 {% block styles %}{% endblock %}
 
 {% block content %}
+    <h5>{{ article_category.description}}</h5>
     <p>{{article.CreatedOn}}</p>
     <p>{{article.UpdatedOn}}</p>
+
+    {% if article.headerImage %}
+        <img src="{{ article.headerImage.url }}" alt="image">
+    {% endif %}
+
     <div>{{ article.entry }}</div>
+
+    {% if article.author %}
+        <a href="{% url 'blog:article-update' pk=view.kwargs.pk %}"><button>Edit Article</button></a>
+    {% endif %} 
+
+    {% if request.user.is_authenticated %}
+    <h3>Comment</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Post</button>
+        </form>
+    {% endif %}
+
+    <a href="{{% url 'blog:article-list' %}}"><button>Back to Article List</button></a>
+
+    
 {% endblock %}
+
 
 {% block scripts %}{% endblock %}
