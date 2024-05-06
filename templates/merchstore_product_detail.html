@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ object.name }} Detail{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/merchstore.css' %}">
+{% endblock %}
+
+{% block content %}
+<div id="content">
+  <h2>{{ object.name }}</h2>
+  <ul>
+    <li>Type: <span class="productname">{{ object.producttype.name }}</span></li>
+    <li>Price: ₱ {{ object.price }}</li>
+    <li>Description: {{ object.description }}</li>
+    <li>Status: {{ object.status }}</li>
+    <li>Stock: {{ object.stock }}</li>
+  </ul>
+
+  {% if user.is_authenticated and not object.owner == user.profile %}
+    {% if object.status != 'out_of_stock' %}
+      <h3>Buy this product</h3>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Buy</button>
+      </form>
+    {% else %}
+      <p>This product is currently out of stock.</p>
+    {% endif %}
+  {% endif %}
+
+  {% if user.is_authenticated and object.owner == user.profile %}
+    <a href="{% url 'merchstore:product_update' object.pk %}">Edit Product</a>
+  {% endif %}
+</div>
+<h3><a href="{% url 'merchstore:product_list' %}">Go back to Products List</a></h3>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/merchstore.js' %}"></script>
+{% endblock %}

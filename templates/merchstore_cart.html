@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Cart{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/merchstore.css' %}">
+{% endblock %}
+
+{% block content %}
+<div id="content">
+  <h1>Your Cart</h1>
+  <ul>
+    {% for transaction in object_list %}
+      <li>{{ transaction.product.name }} - Quantity: {{ transaction.amount }}</li>
+    {% empty %}
+      <li>Your cart is empty.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Transactions List{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/merchstore.css' %}">
+{% endblock %}
+
+{% block content %}
+<div id="content">
+  <h1>Transactions List</h1>
+  <ul>
+    {% for transaction in object_list %}
+      <li>{{ transaction.product.name }} - Sold to {{ transaction.buyer.user.username }} - Quantity: {{ transaction.amount }}</li>
+    {% empty %}
+      <li>No transactions found.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
