@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Thread, ThreadCategory
+from .models import Thread, ThreadCategory, Comment
 # Register your models here.
 
 class ThreadInline(admin.TabularInline):
@@ -13,6 +13,8 @@ class ThreadCategoryAdmin(admin.ModelAdmin):
 class ThreadAdmin(admin.ModelAdmin):
     model = Thread
 
+class CommentInline(admin.TabularInline):
+    model = Comment
 
 admin.site.register(Thread, ThreadAdmin)
 admin.site.register(ThreadCategory, ThreadCategoryAdmin)
