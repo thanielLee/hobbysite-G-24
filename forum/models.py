@@ -22,7 +22,7 @@ class Thread(models.Model):
     author = models.ForeignKey(
         Profile,
         on_delete = models.SET_NULL,
-        related_name = "profiles",
+        related_name = "author",
         null = True
     )
     category = models.ForeignKey(
