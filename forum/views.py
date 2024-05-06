@@ -22,20 +22,19 @@ class ThreadListView(ListView):
         return data
 
 
-class ThreadDetailView(LoginRequiredMixin, DetailView):
+class ThreadDetailView(DetailView):
     model = Thread
     template_name = 'forum_thread_detailview.html'
 
     def get_context_data(self, **kwargs):
         thread = self.get_object()
-
         data = super().get_context_data(**kwargs)
-
+        author = thread.author
+        data['form'] = CommentForm(initial={'author': author, 'thread': thread})
+        data['thread_owner'] = Thread.objects.filter(author=thread.author)
+        data['from_category'] = Thread.objects.filter(category=thread.category)
         if self.request.user.is_authenticated:
-            author = Profile.objects.get(user=self.request.user)
-            data['thread_owner'] = Thread.objects.filter(author=author) 
-            data['user'] = author
-            data['form'] = CommentForm(initial={'author': author, 'thread': thread})
+            data['user'] = Profile.objects.get(user=self.request.user)
         return data
 
     def post(self, request, **kwargs):
@@ -80,7 +79,7 @@ class ThreadEditView(LoginRequiredMixin, UpdateView):
     template_name = 'forum_thread_editview.html'
 
     def get_success_url(self):
-        return reverse_lazy('blog:article-detail', kwargs={'pk': self.object.pk}) #why are you white???
+        return reverse_lazy('forum:thread-detail', kwargs={'pk': self.object.pk})
     
     def form_valid(self, form):
         form.instance.user = self.request.user
