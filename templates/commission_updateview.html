@@ -14,9 +14,9 @@
                 
                 <div class="job-applications">
                     <ul>
-                    {% for job_application in job_applications %}
-                        {% if job_application.job.value == job_form.instance.id %}
-                            <li>{{job_application.as_div}}</li><br>
+                    {% for job_application_form in job_application_forms %}
+                        {% if job_application_form.job.value == job_form.instance.id %}
+                            <li>{{job_application_form.as_div}}</li><br>
                         {% endif %}
                     {% endfor %}
                     </ul>
@@ -57,9 +57,15 @@
 
             formNum++
             newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`)
-            var InputType = newForm.getElementsByTagName("input");
+            var child = newForm.getElementsByClassName('errorlist')
+
+            var InputType = newForm.getElementsByTagName("input")
             for (var i=0; i<InputType.length; i++){
-                InputType[i].value='';      
+                InputType[i].value='';          
+            }
+
+            while(child.length > 0){
+                child[0].parentNode.removeChild(child[0]);
             }
 
             container.insertBefore(newForm, addButton)

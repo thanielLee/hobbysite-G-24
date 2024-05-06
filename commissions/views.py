@@ -41,6 +41,7 @@ class CommissionTemplateUpdateView(TemplateView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         commission = get_object_or_404(Commission, id=self.kwargs["commission_pk"])
+        new_jobs = JobCreationFormSet(queryset=Job.objects.none())
 
         data = {
             'title' : commission.title,
@@ -55,12 +56,15 @@ class CommissionTemplateUpdateView(TemplateView):
         if 'form' in kwargs.keys():
             commission_form = kwargs['form']
             
-        if 'job_formset' in kwargs.keys():
-            job_formset = kwargs['job_formset']
-        
+        if 'new_jobset' in kwargs.keys():
+            new_jobs = kwargs['new_jobset']
+            print(new_jobs)
+                
         if 'with_error' in kwargs.keys():
             error = kwargs['with_error']
+
         test = []
+        job_application_forms = []
         job_applications = []
         for job in commission_jobs:
             job_application_formset = JobApplication.objects.filter(job=job)
@@ -68,18 +72,17 @@ class CommissionTemplateUpdateView(TemplateView):
             job_formset.append(job_form)
             for job_application in job_application_formset:
                 new_form = JobApplicationUpdateForm(instance=job_application)
-                job_applications.append(new_form)
+                job_application_forms.append(new_form)
+                job_applications.append(job_application)
         
-        for job in job_applications:
-            print("yes", job)
-        new_jobs = JobCreationFormSet(queryset=Job.objects.none())
         data['form'] = commission_form
         data['job_formset'] = job_formset
         data['with_error'] = error
+        data['job_application_forms'] = job_application_forms
         data['job_applications'] = job_applications
         data['new_jobs'] = new_jobs
         data['jobs'] = commission_jobs
-        return data
+        return data 
     
     def get_success_url(self):
         return reverse_lazy('commissions:commission_list')
@@ -94,8 +97,7 @@ class CommissionTemplateUpdateView(TemplateView):
     
     def form_invalid(self, form, job_formset):
         messages.error(self.request, "Please fill in empty data")
-        print("WRONG")
-        return self.render_to_response(self.get_context_data(form=form, job_formset=job_formset, with_error=1))
+        return self.render_to_response(self.get_context_data(form=form, new_jobset=job_formset, with_error=1))
 
     def post(self, request, *args, **kwargs):
         print(args, kwargs, request.POST) 
@@ -112,6 +114,13 @@ class CommissionTemplateUpdateView(TemplateView):
             counter += 1
             cur_job.save()
         
+        counter = 0
+        while counter < len(ctx['job_applications']):
+            cur_job_application = ctx['job_applications'][counter]
+            cur_job_application.application_status = test_dict['application_status'][counter]
+            counter += 1
+            cur_job_application.save()
+         
         
         formset = create_formset
         if commission_form.is_valid():
@@ -198,7 +207,6 @@ class CommissionTemplateDetailView(TemplateView):
         data['open_manpower'] = total_manpower_required-commission_current_manpower
         data['commission_owner'] = commission.created_by.id
         data['jobs_applied_by_user'] = job_applied_by_user
-        print("test", job_applied_by_user)
         data['status_choice'] = STATUS_CHOICES
         if total_manpower_required-commission_current_manpower == 0:
             commission.status = 2
@@ -229,7 +237,11 @@ class CommissionTemplateDetailView(TemplateView):
         
     def get_success_url(self) -> str:
         return reverse_lazy('commissions:commission_list')
-    
+
+
+def test(**kwargs):
+    kwargs['won'] = 2
+test(won=2) 
 class CommissionCreateViewTemplate(TemplateView):
     template_name = 'commission_createview.html'
     
@@ -238,6 +250,7 @@ class CommissionCreateViewTemplate(TemplateView):
         commission_form = CommissionForm()
         job_formset = JobCreationFormSet(queryset=Job.objects.none())
         error = 0
+        
         if 'form' in kwargs.keys():
             commission_form = kwargs['form']
             

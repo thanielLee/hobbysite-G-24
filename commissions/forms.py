@@ -19,7 +19,13 @@ class JobApplicationUpdateForm(forms.ModelForm):
     class Meta:
         model = JobApplication
         fields = "__all__"
+
         widgets = {'job': HiddenInput(), 'job_application_id': HiddenInput()} 
+    
+    def __init__(self, *args, **kwargs):
+        super(JobApplicationUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['applicant'].disabled = True
+
 
 class JobCreationForm(forms.ModelForm):
     role = forms.CharField(required=True, max_length=255)
