@@ -11,7 +11,7 @@
                     <li><a href="{{ article.get_absolute_url }}">{{ article.title }}</a> in {{ article.category }}</li>
                 {% endfor %} 
             </ul>
-        <a href="{% url 'blog:article-create' %}"><button>➕ Create Article</button></a>
+        <a href="{% url 'blog:article-create' %}"><button>+ Add Article</button></a>
     {% endif %}
 
     <h1>All Articles:</h1>

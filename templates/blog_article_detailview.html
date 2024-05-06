@@ -2,27 +2,33 @@
 {% load static %}
 
 {% block title %}{% endblock %}
-{% block styles %}{% endblock %}
+{% block styles %}
+    <style>
+        p {
+            margin-left: 20px;
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
     {% if article.headerImage %}
-        <img src="{{ article.headerImage.url }}" alt="img">
+        <img src="{{ article.headerImage.url }}" height = "300px" alt="img">
+    {% else %}
+        <div>Header image unavailable.</div>
     {% endif %}
 
     <h1>{{article.category}} | {{ article.title }} by {{ article.author }}</h1>
-    <p>{{ article.category.description}}</p>
-    <div><small>created: {{article.createdOn}} | last updated: {{article.updatedOn}}</small></div>
+    <div><small>created: {{article.createdOn}} | last updated: {{article.updatedOn}}</small></div><br>
+    <div>{{ article.category.description}}</div><br>
 
-    <br><p>{{ article.entry }}</p>
+    <p>{{ article.entry }}</p><br>
 
     {% if user == article.author %}
         <a href="{% url 'blog:article-update' pk=view.kwargs.pk %}"><button>Edit Article</button></a>
     {% endif %} 
 
     {% if request.user.is_authenticated %}
-        <br>
-        <br>
-        <h3>Write a comment:</h3>
+        <br><h3>Write a comment:</h3>
             <form method="post">
                 {% csrf_token %}
                 {{ form.as_p }}
@@ -33,27 +39,34 @@
     <br><h3>Comments:</h3>
         {% for comment in article.comments.all %}
             <h4>{{ comment.author }}</h4>
-            <div>{{ comment.entry }}</div>
-            <p><small>created: {{ comment.createdOn }} | last edited: {{ comment.updatedOn }}</small></p>
+            <p>{{ comment.entry }}</p>
+            <div><small>created: {{ comment.createdOn }} | last edited: {{ comment.updatedOn }}</small></div>
         {% empty %}
-            <div>No comments yet</div>
+            <p>No comments yet</p>
         {% endfor %}
 
     
     <br><h3>Other Articles by {{ article.author }}:</h3>
     <ul>
-        {% for article in articlesByAuthor %}
-            {% if forloop.counter0 <= 2 %}
-                {% if article.pk != object.pk %}
-                    <li><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></li>
-                {% endif %} 
-            {% endif %}
-        {% empty %}
+        {% if articlesByAuthor|length <= 1%}
             <li>No other articles</li>
-        {% endfor %} 
+        {% else %}
+            {% for article in articlesByAuthor %}
+                {% if forloop.counter0 <= 2 %}
+                    {% if article.pk != object.pk %}
+                        <li><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></li>
+                    {% endif %} 
+                {% endif %}
+            {% endfor %} 
+        {% endif %}
     </ul>    
 
-    <!--<br><h3>Gallery:</h3>-->
+    <br><h3>Gallery:</h3>
+        <div>
+            {% for image in images %}
+                <img src="{{ image }}" height= "200px"  alt="Image">
+            {% endfor %}
+        </div>
 
     <br><a href="{% url 'blog:article-list' %}"><button>🠜 Return to Article List</button></a>
 

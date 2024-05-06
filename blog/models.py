@@ -34,7 +34,7 @@ class Article(models.Model):
     )
 
     entry = models.TextField()
-    headerImage = models.ImageField(upload_to='images/', null=True, blank=True)
+    headerImage = models.ImageField(upload_to='images/blog/', null=True, blank=True)
     createdOn = models.DateTimeField(auto_now_add=True)
     updatedOn = models.DateTimeField(auto_now=True)
 

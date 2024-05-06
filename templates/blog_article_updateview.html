@@ -7,9 +7,9 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_div }}
-        <button type="submit">Edit Post</button>
+        <br><button type="submit">✎ Edit Post</button>
     </form>
-    <br><a href="{% url 'blog:article-list' %}"><button>🠜 Return to Article List</button></a>
+    <br><a href="{% url 'blog:article-detail' pk=view.kwargs.pk %}"><button>🠜 Return to Article</button></a>
 {% endblock %}
 
 {% block scripts %}{% endblock %}

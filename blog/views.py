@@ -1,14 +1,15 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect,render
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
 from django.urls import reverse_lazy
+import os
 
 from .models import Article, ArticleCategory
 from .forms import ArticleForm, CommentForm
 from user_management.models import Profile
-from hobbysite import settings
 
 
 class ArticleListView(ListView):
@@ -32,11 +33,12 @@ class ArticleDetailView(DetailView):
         article = self.get_object()
         author = article.author
         ctx['articlesByAuthor'] = Article.objects.filter(author=author)
+        ctx['form'] = CommentForm(initial={'author': author, 'article': article})
         if self.request.user.is_authenticated:
-             author = article.author
-             ctx['articlesByAuthor'] = Article.objects.filter(author=author)
-             ctx['user'] = author
-             ctx['form'] = CommentForm(initial={'user': author, 'article': article})
+             ctx['user'] = Profile.objects.get(user=self.request.user)
+        path = os.path.join(settings.MEDIA_ROOT, 'images', 'blog')                                                      #Gallery View
+        images = [os.path.join(settings.MEDIA_URL, 'images', 'blog', filename) for filename in os.listdir(path)]
+        ctx['images'] = images
         return ctx
 
     def post(self, request, **kwargs):
