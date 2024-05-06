@@ -1,22 +1,22 @@
 from django.contrib import admin
+from .models import ProductType, Product, Transaction, Profile
 
-from merchstore.models import Product, ProductType
-
-
-class ProductInline(admin.TabularInline):
-    model = Product
-    fields = ['name', 'description', 'price', 'producttype', ]
-
+@admin.register(ProductType)
 class ProductTypeAdmin(admin.ModelAdmin):
-    model = ProductType
-    search_fields = ('name', )
-    list_display = ('name', 'description', 'id', )
-    list_filter = ('name', )
-    inlines = [ProductInline, ]
+    list_display = ['name', 'description']
 
+@admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    model = Product
-    list_display = ('name', 'description', 'price', 'producttype')
+    list_display = ['name', 'producttype', 'owner', 'price', 'stock', 'status']
+    list_filter = ['producttype', 'status']
+    search_fields = ['name']
 
-admin.site.register(ProductType, ProductTypeAdmin)
-admin.site.register(Product, ProductAdmin)
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ['buyer', 'product', 'amount', 'status', 'created_on']
+    list_filter = ['status', 'created_on']
+    search_fields = ['product__name', 'buyer__user__username']
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ['user']
