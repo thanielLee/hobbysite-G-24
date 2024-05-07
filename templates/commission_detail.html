@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}{{object.title}}{% endblock %}
+{% block title %}Commission: {{object.title}}{% endblock %}
 {% block content %}
     <ul>
-        <li>{{object.description}}</li>
-        <li>{{object.created_on}}</li>
-        <li>{{object.updated_on}}</li>
-        <li>{{object.created_by}}</li>
-        <li>{{object.status}}</li>
+        <li>Description: {{object.description}}</li>
+        <li>Created on: {{object.created_on}}</li>
+        <li>Updated on: {{object.updated_on}}</li>
+        <li>Created by: {{object.created_by}}</li>
+        <li>Commission Status: {{object.get_status_display}}</li>
     </ul>
 
-    Jobs:
+    Commisison Jobs:
     <ul>
     {% for job in jobs %}
     <li>    {{job.0.role}}<br>
@@ -21,7 +21,7 @@
             {% if job.0 in jobs_applied_by_user %}
                 {% for job_application in job.0.job_applications.all %}
                     {% if job_application.applicant == user.Profile %}
-                        Status: {{job_application.get_application_status_display}}<br>
+                        Job Application Status: {{job_application.get_application_status_display}}<br>
                     {% endif %}
                 {% endfor %}
             {% elif job.0.open_manpower > 0 and commission_owner != user.pk %}
