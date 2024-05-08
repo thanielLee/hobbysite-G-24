@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Commissions App{% endblock %}
+{% block heading %} Update Commission {%endblock%}
+{% block content %}
+<form id="form-container" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <h1>Update Jobs</h1>
+        {% for job_form in job_formset %}
+            <div class="job-form-update">
+                {{job_form.as_div}}<br>
+                
+                <div class="job-applications">
+                    <ul>
+                    {% for job_application_form in job_application_forms %}
+                        {% if job_application_form.job.value == job_form.instance.id %}
+                            <li>{{job_application_form.as_div}}</li><br>
+                        {% endif %}
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
+    <h1>Create Jobs</h1>
+        {{ new_jobs.management_form }}
+        {% for job_form in new_jobs %}
+            <div class="job-form">
+                {{job_form.as_div}}
+            </div>
+        {% endfor %}
+        <button id="add-form" type="button">Add Another Job</button><br>
+    <button type="submit">Submit</button>
+</form>
+
+{% if with_error == 1 %} 
+    Please fill in or clear the incomplete job fields
+{% elif with_error == 2 %}
+    Input Manpower less than current manpower of job
+{% endif %}
+{% block scripts %}
+    <script>
+        let jobForm = document.querySelectorAll(".job-form")
+        let container = document.querySelector("#form-container")
+        let addButton = document.querySelector("#add-form")
+        let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+
+        let formNum = jobForm.length-1
+        addButton.addEventListener('click', addForm)
+
+        function addForm(e){
+            e.preventDefault()
+            jobForm = document.querySelectorAll(".job-form")
+            let newForm = jobForm[0].cloneNode(true)
+        
+            //newForm.querySelector(".manpower_required").value = ''
+            let formRegex = RegExp(`form-(\\d){1}-`,'g')
+
+            formNum++
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`)
+            var child = newForm.getElementsByClassName('errorlist')
+
+            var InputType = newForm.getElementsByTagName("input")
+            for (var i=0; i<InputType.length; i++){
+                InputType[i].value='';          
+            }
+
+            while(child.length > 0){
+                child[0].parentNode.removeChild(child[0]);
+            }
+
+            container.insertBefore(newForm, addButton)
+            totalForms.setAttribute('value', `${formNum+1}`)
+
+        }
+    </script>
+{% endblock %}
+{% endblock %}

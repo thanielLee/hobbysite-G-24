@@ -1,20 +1,25 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
-
-<h1>{% block title %}Merchandise Detail{% endblock %}</h1>
-{% block styles %}{% endblock %}
-
+{% block title %}
+    Name: {{ product.name }}
+{% endblock title %}
 {% block content %}
-<div id="content">
-  <h2>{{object.name}}</h2>
-  <ul>
-    <li>Type: <span class="productname">{{object.producttype.name}}</span></li>
-      <ul>
-        <li>Price: ₱ {{object.price}}</li>
-        <li>Description: {{object.description}}</li>
-      </ul>
-  </ul>
-</div>
-<h3><a href="/merchstore/items">Go back to Products List</a></h3>
-{% block scripts %}{% endblock %}
-{% endblock %}
+    <a href="{% url 'merchstore:product_list' %}">Back to Product List</a>
+    <h1>Price: P{{ product.price }}</h1>
+    Stock left: {{product.stock}}
+    {% if request.user.Profile == product.owner %}
+        <h3>
+            <a href="{% url 'merchstore:product_update' pk=product.pk %}">Edit Product</a>
+        </h3>
+    {% endif %}
+    <h2>Product Type: {{ product.type }}</h2>
+    <h2>Product Status: {{product.get_status_display}}</h2>
+    <p>{{ product.description }}</p>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit"
+               value="Purchase"
+               {% if request.user.Profile == product.owner or product.stock == 0 %}disabled{% endif %}>
+    </form>
+{% endblock content %}

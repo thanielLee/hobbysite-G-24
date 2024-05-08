@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    Transactions
+{% endblock title %}
+{% block content %}
+    <h1>Transactions</h1>
+    {% for buyer in buyers %}
+        {% if buyer != request.user.profile %}
+            <h2>{{ buyer }}</h2>
+            <ul>
+                {% for transaction in object_list %}
+                    {% if transaction.buyer == buyer %}<li>{{ transaction }}</li>{% endif %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endfor %}
+{% endblock content %}
