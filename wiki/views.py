@@ -42,7 +42,7 @@ class WikiDetailView(DetailView):
 		
 		if form.is_valid():
 			comment = form.save(commit=False)
-			comment.comment_author = author
+			comment.comment_author_wiki = author
 			comment.comment_article = article
 			comment.save()
 			return redirect('wiki:article-detail', pk=article.pk)

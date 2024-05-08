@@ -69,7 +69,7 @@ class ProductDetailView(DetailView):
             transaction.product = product
             transaction.amount = form.cleaned_data["amount"]
             transaction.buyer = request.user.Profile
-            transaction.status = "On_Cart"
+            transaction.status = "On Cart"
             transaction.save()
             product.stock -= form.cleaned_data["amount"]
             product.save()
@@ -126,7 +126,10 @@ class CartView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        current_user = Profile.objects.get(user=self.request.user)
+        transactions_from_user = Transaction.objects.filter(buyer=current_user)
         context["owners"] = Profile.objects.all()
+        context["transactions_from_user"] = transactions_from_user
         return context
 
 class TransactionListView(LoginRequiredMixin, ListView):
@@ -135,5 +138,9 @@ class TransactionListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        current_seller = Profile.objects.get(user=self.request.user)
+        products_from_seller = Product.objects.filter(owner=current_seller)
+        transactions_by_seller = Transaction.objects.filter(product__in=products_from_seller)
         context["buyers"] = Profile.objects.all()
+        context["transactions_by_seller"] = transactions_by_seller
         return context

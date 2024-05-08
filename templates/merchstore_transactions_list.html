@@ -4,12 +4,12 @@
     Transactions
 {% endblock title %}
 {% block content %}
-    <h1>Transactions</h1>
+    <h1>Buyers</h1><br>
     {% for buyer in buyers %}
-        {% if buyer != request.user.profile %}
+        {% if buyer != request.user.Profile %}
             <h2>{{ buyer }}</h2>
             <ul>
-                {% for transaction in object_list %}
+                {% for transaction in transactions_by_seller %}
                     {% if transaction.buyer == buyer %}<li>{{ transaction }}</li>{% endif %}
                 {% endfor %}
             </ul>
