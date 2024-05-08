@@ -40,7 +40,7 @@
   <ul>
     {% for comment in article.comment_article.all %}
       <li>
-        <h4>{{ comment.comment_author }}</h4>
+        <h4>{{ comment.comment_author_wiki }}</h4>
         <p>{{ comment.entry }}</p>
         <p>Created On: {{ comment.created_on }}</p>
         <p>Updated On: {{ comment.updated_on }}</p>
