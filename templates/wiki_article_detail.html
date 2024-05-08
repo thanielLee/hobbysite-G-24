@@ -1,11 +1,64 @@
 {% extends 'base.html' %}
 
-{% block title %}{{object.title}}{% endblock %}
+{% load static %}
+{% block title %}{{article.article_category}}{% endblock %}
 {% block content %}
-    <ul>
-        <li>{{object.entry}}</li>
-        <li>{{object.created_on}}</li>
-        <li>{{object.updated_on}}</li>
-    </ul>
-    <a href="/wiki/articles">Back to Wiki Categories</a>
- {% endblock %}
+    <h2>{{article.title}} by {{article.article_author}}</h2>
+
+    <p>Created on: {{article.created_on}}</p>
+    <p>Updated on: {{article.updated_on}}</p>
+
+  {% if article.header_image %}
+    <img src="{{ article.header_image.url }}" alt="Image">
+  {% else %}
+    <p>Image not available.</p>
+  {% endif %}
+
+  <p>{{ article.entry }}</p>
+
+  <br>
+  {% if viewer == article.article_author %}
+  <a href="{% url 'wiki:article-update' pk=view.kwargs.pk %}"><button>Edit Article</button></a>
+  <br>
+  {% else %}  
+    <p>You must be the author of this blog to edit the page.</p>
+  {% endif %}
+
+  {% if request.user.is_authenticated %}
+    <h3>Submit a Comment</h3>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Submit</button>
+    </form>
+  {% else %}
+    <p>Please <a href="{% url 'login' %}">login</a> to submit a comment.</p>
+  {% endif %}
+
+  
+  <h3>Comments</h3>
+  <ul>
+    {% for comment in article.comment_article.all %}
+      <li>
+        <h4>{{ comment.comment_author }}</h4>
+        <p>{{ comment.entry }}</p>
+        <p>Created On: {{ comment.created_on }}</p>
+        <p>Updated On: {{ comment.updated_on }}</p>
+      </li>
+    {% empty %}
+      <li>No comments yet.</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Other Articles from {{ article.article_category }}:</h3>
+  <ul>
+        {% for article in categories %}
+            {% if article.pk != object.pk %}
+                <li><a href = "{{ article.get_absolute_url }}">{{ article.title }}</a></li>
+            {% endif %}
+        {% endfor %}
+  </ul>    
+
+  <a href="{% url 'wiki:article-list' %}"><button>Return to Article List</button></a>
+
+{% endblock %}

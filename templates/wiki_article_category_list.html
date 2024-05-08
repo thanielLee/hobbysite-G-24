@@ -1,17 +1,33 @@
 {% extends 'base.html' %}
-
-{% block title %} Article Categories {% endblock %}
+{% load static %}
+{% block title %} Wiki {% endblock %}
 {% block content %}
- <ul>
+{% if request.user.is_authenticated %}
+<p>Hello, {{user.username}}! </p>
+{% endif %}
+    {% if request.user.is_authenticated %}
+        <h1>My Articles</h1> 
+                <ul>
+                    {% for article in articles_by_author %}              
+                        <li><a href = "{{article.get_absolute_url}}">{{article.title}}</a></li>     
+                    {% endfor %}        
+                </ul>
+        <a href="{% url 'wiki:article-create' %}"><button>Create Article</button></a>
+    {% endif %}
+
+    <h2>All Articles:</h2>
     {% for article_category in object_list %}
-        <li>{{article_category.name}}</li>
+        <h3>{{ article_category }}</h3>
         <ul>
-            {% for article in article_category.article.all %}
-            <li>
-                <a href = "{{article.get_absolute_url}}">{{article.title}}</a>
-            </li>
+            {% for article in article_category.article_category.all %}
+                {% if request.user.is_authenticated %}
+                    {% if article not in articles_by_author %}
+                        <li><a href="{{ article.get_absolute_url }}">{{article.title}}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li><a href="{{ article.get_absolute_url }}">{{article.title}}</a></li>
+                {% endif %}
             {% endfor %}
         </ul>
     {% endfor %}
- </ul>
- {% endblock %}
+{% endblock %} 
