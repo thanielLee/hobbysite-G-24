@@ -27,7 +27,8 @@ class Commission(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
         Profile,
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        related_name="commissions"
     )
     
     def __str__(self):

@@ -10,12 +10,20 @@
         </ul>
 
         <a href = "{% url 'commissions:commission_add' %}"><button>Create Commission</button></a><br><br>
+
+        Commissions Applied to:
+        <ul>
+            {% for applied_commission in user_applied %}
+                <li><a href="{{applied_commission.get_absolute_url}}">{{applied_commission.title}}</li></a>
+            {% endfor %}
+        </ul>
+
     {% endif %}
 
     All other commissions:
     <ul>
         {% for commission in object_list %}
-            {% if commission not in user_created %}
+            {% if commission not in user_created and commission not in user_applied %}
                 <li>
                     <a href ="{{commission.get_absolute_url}}">{{commission.title}}</a>
                 </li>

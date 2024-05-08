@@ -2,10 +2,7 @@ from typing import Any
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.generic.list import ListView
-from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView, ModelFormMixin, UpdateView
 from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Commission, Job, JobApplication
 from .forms import CommissionForm, JobApplicationForm, JobCreationFormSet, JobApplicationUpdateForm, JobApplicationFormSet, JobApplicationUpdateFormSet, JobUpdateFormSet, JobUpdateForm
 from django.urls import reverse_lazy, reverse
@@ -30,6 +27,17 @@ class CommissionListView(ListView):
         if user.is_authenticated:
             data = super().get_context_data(**kwargs)
             data['user_created'] = Commission.objects.filter(created_by=user.Profile)
+            commission_id_set = set()
+            
+            user_job_applications = list(JobApplication.objects.filter(applicant=user.Profile))
+            for job_application in user_job_applications:
+                cur_job = job_application.job
+                cur_commission = cur_job.commission
+                commission_id_set.add(cur_commission.id)
+            user_applied_commissions = []
+            for commission_id in commission_id_set:
+                user_applied_commissions.append(Commission.objects.get(id=commission_id))
+            data['user_applied'] = user_applied_commissions
             
             return data
         else:
