@@ -4,23 +4,31 @@
 {% block styles %}{% endblock %}
 
 {% block content %}
-     {% for article_category in object_list %}
-        <ul> 
-            <h2>
-                <li>{{ article_category }}</li>
-            </h2>
-            <p>{{ article_category.description}}</p>
-            <h3>
-                {% for article in article_category.article.all %}
-                <ul>
+    {% if request.user.is_authenticated %}
+        <h1>My Articles:</h1>
+            <ul>
+                {% for article in articlesByAuthor %}
+                    <li><a href="{{ article.get_absolute_url }}">{{ article.title }}</a> in {{ article.category }}</li>
+                {% endfor %} 
+            </ul>
+        <a href="{% url 'blog:article-create' %}"><button>+ Add Article</button></a>
+    {% endif %}
+
+    <h1>All Articles:</h1>
+    {% for article_category in object_list %}
+        <h2>{{ article_category }}</h2>
+        <ul>
+            {% for article in article_category.article.all %}
+                {% if request.user.is_authenticated %}
+                    {% if article not in articlesByAuthor %}
+                        <li><a href="{{ article.get_absolute_url }}">{{article.title}}</a></li>
+                    {% endif %}
+                {% else %}
                     <li><a href="{{ article.get_absolute_url }}">{{article.title}}</a></li>
-                </ul>
-                {% endfor %}
-            </h3>
-            <br>
+                {% endif %}
+            {% endfor %}
         </ul>
     {% endfor %}
-
 {% endblock %}
 
 {% block scripts %}{% endblock %}
