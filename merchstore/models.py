@@ -47,8 +47,7 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         if self.stock == 0:
             self.status = "Out of Stock"
-        else:
-            self.status = "Available"
+ 
         super(Product, self).save(*args, **kwargs)
 
 

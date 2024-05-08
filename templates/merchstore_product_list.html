@@ -34,6 +34,9 @@
                 {% endfor %}
             </ul>
         {% endfor %}
+
+        <a href="{%url 'merchstore:cart'%} "><button>Your Cart</button></a>
+        <a href="{%url 'merchstore:transaction_list'%} "><button>Your Transactions</button></a>
     {% else %}
         <h1>Products</h1>
         {% for type in product_types %}

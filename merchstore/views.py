@@ -52,7 +52,6 @@ class ProductDetailView(DetailView):
 
 
     def post(self, request, *args, **kwargs):
-
         form = TransactionForm(request.POST)
         product = self.get_object()
         form.is_valid()
@@ -115,8 +114,9 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         if form.instance.stock == 0:  
             form.instance.status = "Out of Stock"
-        else:
-            form.instance.status = "Available"
+        print(self.request.POST)
+        data = dict(self.request.POST)  
+        form.instance.status = data['status'][0]
         form.instance.owner = Profile.objects.get(user=self.request.user)
         form.is_valid()
         form.save()
@@ -133,7 +133,7 @@ class CartView(LoginRequiredMixin, ListView):
 
 class TransactionListView(LoginRequiredMixin, ListView):
     model = Transaction
-    template_name = "merchstore_transaction_list.html"
+    template_name = "merchstore_transactions_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
