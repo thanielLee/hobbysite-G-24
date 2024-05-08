@@ -1,43 +1,47 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% load static %}
-    {% block loginheader %}
-    <h1>
-        Hobbysite <br>
-        {% if user.is_authenticated %}
-            <form method="POST" action="{% url 'profiles:update' user.pk %}">
-                {% csrf_token %}
-            <button type="submit">Update Profile</button>
-            </form>
-            <form method="POST" action="{% url 'logout' %}">
-                {% csrf_token %}
-            <button type="submit">Logout</button>
-            </form>
-        {% else %}
-            <a href="/profile/login"> Login </a><br>
-            <a href="/profile/register"> Register </a>
-        {% endif %}
-    </h1>
-    {% endblock %}
-    
-    {% block navbar %}
-        <a href ="{% url 'merchstore:product_list' %}"><button>Merchstore</button></a><br>
-        <a href ="{% url 'commissions:commission_list' %}"><button>Commissions</button></a><br>
-        <a href ="{% url 'forum:thread-list' %}"><button>Forum</button></a><br>
-        <a href ="{% url 'blog:article-list' %}"><button>Blog</button></a><br>
-        <a href ="{% url 'wiki:article-list' %}"><button>Wiki</button></a><br>
-    {% endblock %}
-    <h1>{% block title %}{% endblock %}</h1>
-    {% block styles %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
+    <title>HobbySite</title>
 </head>
 <body>
+    <header>
+        <div class="logo">
+            🛒HobbySite
+        </div>
+        <div class="header-nav">
+            {% if user.is_authenticated %}
+                <nav class="user-nav">
+                    <form method="POST" action="{% url 'profiles:update' user.pk %}" class="form-button">
+                        {% csrf_token %}
+                        <button type="submit">Update Profile</button>
+                    </form>
+                    <form method="POST" action="{% url 'logout' %}" class="form-button">
+                        {% csrf_token %}
+                        <button type="submit">Logout</button>
+                    </form>
+                </nav>
+            {% else %}
+                <nav class="user-nav">
+                    <a href="/profile/login">Login</a>
+                    <a href="/profile/register">Register</a>
+                </nav>
+            {% endif %}
+        </div>
+    </header>
+    <nav class="site-nav">
+        <a href="{% url 'blog:article-list' %}">Blog</a>
+        <a href="{% url 'commissions:commission_list' %}">Commissions</a>
+        <a href="{% url 'forum:thread-list' %}">Forum</a>
+        <a href="{% url 'merchstore:product_list' %}">Merchstore</a>
+        <a href="{% url 'wiki:article-list' %}">Wiki</a>
+    </nav>
     <div id="content">
         {% block content %}{% endblock %}
     </div>
-    
-    {% block scripts %}{% endblock %}
 </body>
 </html>
