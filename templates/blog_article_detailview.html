@@ -52,11 +52,9 @@
             <li>No other articles</li>
         {% else %}
             {% for article in articlesByAuthor %}
-                {% if forloop.counter0 <= 2 %}
                     {% if article.pk != object.pk %}
                         <li><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></li>
                     {% endif %} 
-                {% endif %}
             {% endfor %} 
         {% endif %}
     </ul>    
