@@ -1,24 +1,47 @@
 {% extends 'base.html' %}
 
-{% block title %}{{object.title}}{% endblock %}
+{% block title %}Commission: {{object.title}}{% endblock %}
 {% block content %}
     <ul>
-        <li>{{object.description}}</li>
-        <li>{{object.people_required}}</li>
-        <li>{{object.created_on}}</li>
-        <li>{{object.updated_on}}</li>
+        <li>Description: {{object.description}}</li>
+        <li>Created on: {{object.created_on}}</li>
+        <li>Updated on: {{object.updated_on}}</li>
+        <li>Created by: {{object.created_by}}</li>
+        <li>Commission Status: {{object.get_status_display}}</li>
     </ul>
 
-    <h3>Comments</h3>
+    Commisison Jobs:
     <ul>
-        {% for comment in object.comment.all %}
-        <li>
-            Entry: {{comment.entry}}<br>
-            Created on: {{comment.created_on}}<br>
-            Updated on: {{comment.updated_on}}<br>
-        </li> <br>
-        {% endfor %}
-    </ul>
+    {% for job in jobs %}
+    <li>    {{job.0.role}}<br>
+                Manpower Required: {{job.0.manpower_required}}<br>
+                Current Manpower: {{job.0.current_manpower}}<br>
+                Open Manpower: {{job.0.open_manpower}}<br>
+                Status: {{job.0.get_status_display}}<br>
+            {% if job.0 in jobs_applied_by_user %}
+                {% for job_application in job.0.job_applications.all %}
+                    {% if job_application.applicant == user.Profile %}
+                        Job Application Status: {{job_application.get_application_status_display}}<br>
+                    {% endif %}
+                {% endfor %}
+            {% elif job.0.open_manpower > 0 and commission_owner != user.pk %}
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ job.1.as_div }}
+                    <input type="hidden" id="job_id_{{job.3}}" name="hidden_job_id" value="{{job.3}}">
+                    <button type="submit">Submit</button>
+                </form>
+            {% endif %}
+        </li><br>
+    {% endfor %}
 
-    <a href="/commissions/list">Back to Commissions</a>
+    </ul>
+    Total Manpower Required = {{total_manpower_required}}<br>
+    Current Manpower = {{current_manpower}}<br>
+    Open Manpower = {{open_manpower}}<br>
+
+    {% if user.pk == commission_owner %}
+        <a href="{% url 'commissions:commission_update' commission_pk=object.pk %}"><button>Update Commission</button></a><br>
+    {% endif %}
+    <a href="/commissions/list"><button>Back to Commissions</button></a>
 {% endblock %}

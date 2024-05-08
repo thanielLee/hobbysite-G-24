@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Commissions App{% endblock %}
+{% block heading %} Post Commission {%endblock%}
+{% block content %}
+<form id="form-container" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <h1>Create Jobs</h1>
+        {{ job_formset.management_form }}
+        {% for job_form in job_formset %}
+            <div class="job-form">
+                {{job_form.as_div}}
+            </div>
+        {% endfor %}
+        <button id="add-form" type="button">Add Another Job</button><br>
+    <button type="submit">Submit</button>
+</form>
+
+{% if with_error == 1 %} 
+    Please fill in or clear the incomplete job fields
+{% endif %}
+{% block scripts %}
+    <script>
+        let jobForm = document.querySelectorAll(".job-form")
+        let container = document.querySelector("#form-container")
+        let addButton = document.querySelector("#add-form")
+        let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+
+        let formNum = jobForm.length-1
+        addButton.addEventListener('click', addForm)
+
+        function addForm(e){
+            e.preventDefault()
+
+            let newForm = jobForm[0].cloneNode(true)
+            let formRegex = RegExp(`form-(\\d){1}-`,'g')
+
+            formNum++
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`)
+            container.insertBefore(newForm, addButton)
+            
+            totalForms.setAttribute('value', `${formNum+1}`)
+        }
+    </script>
+{% endblock %}
+{% endblock %}

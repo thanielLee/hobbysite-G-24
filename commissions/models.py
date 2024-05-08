@@ -1,13 +1,35 @@
 from django.db import models
 from datetime import datetime
 from django.urls import reverse
+from user_management.models import Profile
 
 class Commission(models.Model):
+    OPEN = 1
+    FULL = 2
+    COMPLETED = 3
+    DISCONTINUED = 4
+    
     title = models.CharField(max_length=255)
     description = models.TextField()
-    people_required = models.IntegerField()
+    
+    STATUS_CHOICES = (
+        (OPEN, "Open"),
+        (FULL, "Full"),
+        (COMPLETED, "Completed"),
+        (DISCONTINUED, "Discontinued")
+    )
+    status = models.IntegerField(
+        choices = STATUS_CHOICES,
+        default = OPEN
+    )
+    
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        Profile,
+        on_delete=models.PROTECT,
+        related_name="commissions"
+    )
     
     def __str__(self):
         return self.title
@@ -17,25 +39,78 @@ class Commission(models.Model):
 
 
     class Meta:
-        ordering = ['updated_on']
+        ordering = ['created_on']
 
-class Comment(models.Model):
+class Job(models.Model):
+    OPEN = 1
+    FULL = 2
+    STATUS_CHOICES = (
+        (OPEN, "Open"),
+        (FULL, "Full"),
+    )
+    
     commission = models.ForeignKey(
         Commission,
-        related_name="comment",
+        related_name="jobs",
         on_delete=models.CASCADE
     )
-
-    entry = models.TextField()
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
+    
+    role = models.CharField(max_length=255)
+    manpower_required = models.IntegerField()
+    current_manpower = models.IntegerField(default=0)
+    open_manpower = models.IntegerField(default=0)
+    status = models.IntegerField(
+        choices = STATUS_CHOICES,
+        default = OPEN,
+    )
 
     def __str__(self):
-        return self.entry
+        return self.role
+    
+    def modify_open_manpower(self, value):
+        self.open_manpower = value
+        self.save()
+    
+    def modify_current_manpower(self, value):
+        self.current_manpower = value
+        self.modify_open_manpower(self.manpower_required-value)
+        self.save()
     
     
     class Meta:
-        ordering = ['created_on']
+        ordering = ['-status', '-manpower_required', 'role']
 
+class JobApplication(models.Model):
+    job = models.ForeignKey(
+        Job,
+        on_delete=models.CASCADE,
+        related_name="job_applications"
+    )
+    
+    applicant = models.ForeignKey(
+        Profile,
+        related_name="job_applications",
+        on_delete=models.CASCADE
+    )
+    
+    PENDING = 0
+    ACCEPTED = 1
+    REJECTED = 2
+    
+    STATUS_CHOICES = (
+        (PENDING, "Pending"),
+        (ACCEPTED, "Accepted"),
+        (REJECTED, "Rejected")
+    )
+    
+    application_status = models.IntegerField(
+        choices = STATUS_CHOICES,
+        default = PENDING,
+    )
+    
+    applied_on = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-application_status', '-applied_on']
 
     
