@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.detail import DetailView
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate, login
 from django.urls import reverse_lazy
@@ -41,3 +42,9 @@ class UpdateProfileView(UpdateView):
         user.save()
         user_profile.save()
         return response
+
+class ProfileDetailView(DetailView):
+    model = Profile
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
