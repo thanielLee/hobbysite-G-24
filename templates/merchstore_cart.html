@@ -1,21 +1,22 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
-
-{% block title %}Your Cart{% endblock %}
-
-{% block styles %}
-<link rel="stylesheet" href="{% static 'css/merchstore.css' %}">
-{% endblock %}
-
+{% block title %}
+    Cart
+{% endblock title %}
 {% block content %}
-<div id="content">
-  <h1>Your Cart</h1>
-  <ul>
-    {% for transaction in object_list %}
-      <li>{{ transaction.product.name }} - Quantity: {{ transaction.amount }}</li>
-    {% empty %}
-      <li>Your cart is empty.</li>
+    <h1>Cart</h1>
+    {% for owner in owners %}
+        {% if owner != request.user.profile %}
+        <h2>{{ owner }}</h2>
+        {% endif %} 
+        <ul>
+            {% for transaction in object_list %}
+                {% if transaction.product.owner == owner %}
+                    <li>
+                        {{ transaction }}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
     {% endfor %}
-  </ul>
-</div>
-{% endblock %}
+{% endblock content %}

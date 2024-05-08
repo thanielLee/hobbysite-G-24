@@ -1,21 +1,18 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
-
-{% block title %}Transactions List{% endblock %}
-
-{% block styles %}
-<link rel="stylesheet" href="{% static 'css/merchstore.css' %}">
-{% endblock %}
-
+{% block title %}
+    Transactions
+{% endblock title %}
 {% block content %}
-<div id="content">
-  <h1>Transactions List</h1>
-  <ul>
-    {% for transaction in object_list %}
-      <li>{{ transaction.product.name }} - Sold to {{ transaction.buyer.user.username }} - Quantity: {{ transaction.amount }}</li>
-    {% empty %}
-      <li>No transactions found.</li>
+    <h1>Transactions</h1>
+    {% for buyer in buyers %}
+        {% if buyer != request.user.profile %}
+            <h2>{{ buyer }}</h2>
+            <ul>
+                {% for transaction in object_list %}
+                    {% if transaction.buyer == buyer %}<li>{{ transaction }}</li>{% endif %}
+                {% endfor %}
+            </ul>
+        {% endif %}
     {% endfor %}
-  </ul>
-</div>
-{% endblock %}
+{% endblock content %}
