@@ -1,72 +1,105 @@
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Product, Transaction
-from .forms import TransactionForm, ProductForm
+from django.contrib.auth.views import redirect_to_login
+from django.shortcuts import redirect
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.list import ListView
 
-class ProductListView(LoginRequiredMixin, ListView):
+from user_management.models import Profile
+from .forms import ProductForm, TransactionForm
+from .models import Product, ProductType, Transaction
+
+class ProductListView(ListView):
     model = Product
-    template_name = 'merchstore_product_list.html'
+    template_name = "merchstore_product_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user_products'] = Product.objects.filter(owner=self.request.user.Profile)
-        context['other_products'] = Product.objects.exclude(owner=self.request.user.Profile)
+        context["product_types"] = ProductType.objects.all()
         return context
 
-class ProductDetailView(LoginRequiredMixin, DetailView):
+class ProductDetailView(DetailView):
     model = Product
-    template_name = 'merchstore_product_detail.html'
+    template_name = "merchstore_product_type_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        object = Product.objects.get(id=self.kwargs["pk"])
-        context['form'] = TransactionForm(initial={'product': object})
-        context['is_owner'] = object.owner == self.request.user.Profile
+        form = TransactionForm()
+        form.fields["amount"].widget.attrs["max"] = context["product"].stock
+        context["form"] = form
         return context
 
     def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if not self.get_context_data()['is_owner']:
-            form = TransactionForm(data = request.POST)
-            if form.is_valid():
-                form.instance.buyer = request.user.Profile
-                form.save()
-                return redirect('merchstore:cart_view')
-        return redirect('merchstore:product_detail', pk=self.kwargs['pk'])
+        form = TransactionForm(request.POST)
+        product = self.get_object()
+        if form.is_valid():
+            transaction = Transaction()
+            transaction.product = product
+            transaction.amount = form.cleaned_data["amount"]
+            transaction.buyer = request.user.Profile
+            transaction.save()
+            product.stock -= form.cleaned_data["amount"]
+            product.save()
+            return redirect("merchstore:cart")
+        else:
+            self.object_list = self.get_queryset()
+            context = self.get_context_data()
+            context["form"] = form
+            return self.render_to_response(context)
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
+    template_name = "merchstore_product_create.html"
     form_class = ProductForm
-    template_name = 'merchstore_product_form.html'
-    success_url = reverse_lazy('merchstore:product_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = context["form"]
+        form.fields["owner"].initial = Profile.objects.get(user=self.request.user)
+        form.fields["owner"].disabled = True
+        context["form"] = form
+        return context
 
     def form_valid(self, form):
-        form.instance.owner = self.request.user.Profile
-        form.is_valid()
-        form.save()
+        form.instance.owner = Profile.objects.get(user=self.request.user)
         return super().form_valid(form)
 
 class ProductUpdateView(LoginRequiredMixin, UpdateView):
     model = Product
+    template_name = "merchstore_product_create.html"
     form_class = ProductForm
-    template_name = 'merchstore_product_form.html'
-    success_url = reverse_lazy('merchstore:product_list')
 
-    def get_queryset(self):
-        return super().get_queryset().filter(owner=self.request.user.Profile)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = context["form"]
+        form.fields["owner"].initial = Profile.objects.get(user=self.request.user)
+        form.fields["owner"].disabled = True
+        context["form"] = form
+        return context
+
+    def form_valid(self, form):
+        product = self.get_object()
+        if product.stock == 0:
+            product.status = "Out of Stock"
+        else:
+            product.status = "Available"
+        product.save()
+        return super().form_valid(form)
 
 class CartView(LoginRequiredMixin, ListView):
     model = Transaction
-    template_name = 'merchstore_cart.html'
+    template_name = "merchstore_cart.html"
 
-    def get_queryset(self):
-        return Transaction.objects.filter(buyer=self.request.user.Profile)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["owners"] = Profile.objects.all()
+        return context
 
-class TransactionsListView(LoginRequiredMixin, ListView):
+class TransactionListView(LoginRequiredMixin, ListView):
     model = Transaction
-    template_name = 'merchstore_transactions_list.html'
+    template_name = "merchstore_transaction_list.html"
 
-    def get_queryset(self):
-        return Transaction.objects.filter(product__owner=self.request.user.Profile)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["buyers"] = Profile.objects.all()
+        return context
