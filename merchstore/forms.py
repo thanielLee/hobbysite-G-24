@@ -4,7 +4,7 @@ from django import forms
 
 from user_management.models import Profile
 
-from .models import Product
+from .models import Product, Transaction
 
 
 class ProductForm(forms.ModelForm):
@@ -16,5 +16,9 @@ class ProductForm(forms.ModelForm):
         fields = "__all__"
 
 
-class TransactionForm(forms.Form):
+class TransactionForm(forms.ModelForm):
     amount = forms.IntegerField(min_value=0)
+
+    class Meta:
+        model = Transaction
+        fields = ['amount']

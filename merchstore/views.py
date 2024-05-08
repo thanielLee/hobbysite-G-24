@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
+from django.urls import reverse
 
 from user_management.models import Profile
 from .forms import ProductForm, TransactionForm
@@ -28,15 +29,49 @@ class ProductDetailView(DetailView):
         form.fields["amount"].widget.attrs["max"] = context["product"].stock
         context["form"] = form
         return context
+    
+    def dispatch(self, request, *args, **kwargs):
+        transaction_data = request.session.get('transaction_data')
+        if transaction_data:
+            new_form = TransactionForm()
+            new_transaction = new_form.save(commit=False)
+            user = self.request.user
+            new_transaction.buyer = user.Profile
+            new_transaction.amount = transaction_data['amount']
+            product = Product.objects.get(id=transaction_data['product_id'])
+            new_transaction.product = product
+            product.stock -= transaction_data['amount']
+            new_transaction.status = "On Cart"
+            new_transaction.save()
+            product.save()
+            del request.session['transaction_data']
+            return redirect("merchstore:cart")
+        return super().dispatch(request, *args, **kwargs)
+
+
+
 
     def post(self, request, *args, **kwargs):
+
         form = TransactionForm(request.POST)
         product = self.get_object()
+        form.is_valid()
+
+        if not self.request.user.is_authenticated:
+            print(product,  form.cleaned_data['amount'])
+            request.session['transaction_data'] = {
+                'product_id' : product.id,
+                'amount' : form.cleaned_data['amount']
+            }
+            login_url = reverse('login') + '?next=' + request.get_full_path()
+            return redirect(login_url)
+        
         if form.is_valid():
             transaction = Transaction()
             transaction.product = product
             transaction.amount = form.cleaned_data["amount"]
             transaction.buyer = request.user.Profile
+            transaction.status = "On_Cart"
             transaction.save()
             product.stock -= form.cleaned_data["amount"]
             product.save()
