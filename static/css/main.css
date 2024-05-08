@@ -1,0 +1,141 @@
+h1, h2, h3, h4, h5, h6, p, ul, ol, li, table, form {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+}
+
+body, h1, form {
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 100px; 
+}
+
+.logo {
+    font-size: 30px; 
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+}
+
+.header-nav {
+    display: flex;
+}
+
+.user-nav, .site-nav {
+    display: flex;
+    list-style-type: none;
+}
+
+.user-nav a, .user-nav .form-button button {
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    color: white;
+    background-color: #4CAF50; 
+    border: none;
+    padding: 10px 20px;
+    text-decoration: none;
+    margin: 0 10px;
+    cursor: pointer;
+    border-radius: 5px; 
+}
+
+.user-nav a:hover, .user-nav .form-button button:hover {
+    background-color: #45a049;
+}
+
+.site-nav {
+    background-color: #222;
+    justify-content: center; 
+    padding: 0 0;
+}
+
+.site-nav a {
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
+    background-color: transparent;
+    color: white;
+    padding: 10px 15px;
+}
+
+.form-button {
+    display: inline-block;
+}
+
+.form-button form {
+    display: inline; 
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Arial', sans-serif;
+    color: #222;
+}
+
+h1 {
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+h4 {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+h5 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+h6 {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+p {
+    margin-bottom: 15px;
+}
+
+ul, ol {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+ul {
+    list-style: disc;
+}
+
+ol {
+    list-style: decimal;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
