@@ -57,7 +57,6 @@ class ProductDetailView(DetailView):
         form.is_valid()
 
         if not self.request.user.is_authenticated:
-            print(product,  form.cleaned_data['amount'])
             request.session['transaction_data'] = {
                 'product_id' : product.id,
                 'amount' : form.cleaned_data['amount']
@@ -114,7 +113,6 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         if form.instance.stock == 0:  
             form.instance.status = "Out of Stock"
-        print(self.request.POST)
         data = dict(self.request.POST)  
         form.instance.status = data['status'][0]
         form.instance.owner = Profile.objects.get(user=self.request.user)
