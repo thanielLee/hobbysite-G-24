@@ -1,23 +1,25 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}
-    {{ product.name }}
+    Name: {{ product.name }}
 {% endblock title %}
 {% block content %}
     <a href="{% url 'merchstore:product_list' %}">Back to Product List</a>
-    <h1>{{ product.name }} - {{ product.price }}</h1>
-    {% if request.user.profile == product.owner %}
+    <h1>Price: P{{ product.price }}</h1>
+    Stock left: {{product.stock}}
+    {% if request.user.Profile == product.owner %}
         <h3>
             <a href="{% url 'merchstore:product_update' pk=product.pk %}">Edit Product</a>
         </h3>
     {% endif %}
-    <h2>{{ product.type }}</h2>
+    <h2>Product Type: {{ product.type }}</h2>
+    <h2>Product Status: {{product.get_status_display}}</h2>
     <p>{{ product.description }}</p>
     <form method="POST">
         {% csrf_token %}
         {{ form }}
         <input type="submit"
                value="Purchase"
-               {% if request.user.profile == product.owner or product.stock == 0 %}disabled{% endif %}>
+               {% if request.user.Profile == product.owner or product.stock == 0 %}disabled{% endif %}>
     </form>
 {% endblock content %}

@@ -10,7 +10,7 @@
             <h2>{{ type }}</h2>
             <ul>
                 {% for product in object_list %}
-                    {% if product.type == type and product.owner == request.user.profile %}
+                    {% if product.type == type and product.owner == request.user.Profile %}
                         <li>
                             <a href="{{ product.get_absolute_url }}">{{ product }}</a>
                         </li>
@@ -26,7 +26,7 @@
             <h2>{{ type }}</h2>
             <ul>
                 {% for product in object_list %}
-                    {% if product.type == type and product.owner != request.user.profile %}
+                    {% if product.type == type and product.owner != request.user.Profile %}
                         <li>
                             <a href="{{ product.get_absolute_url }}">{{ product }}</a>
                         </li>

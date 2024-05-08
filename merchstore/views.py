@@ -78,12 +78,13 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def form_valid(self, form):
-        product = self.get_object()
-        if product.stock == 0:
-            product.status = "Out of Stock"
+        if form.instance.stock == 0:  
+            form.instance.status = "Out of Stock"
         else:
-            product.status = "Available"
-        product.save()
+            form.instance.status = "Available"
+        form.instance.owner = Profile.objects.get(user=self.request.user)
+        form.is_valid()
+        form.save()
         return super().form_valid(form)
 
 class CartView(LoginRequiredMixin, ListView):
