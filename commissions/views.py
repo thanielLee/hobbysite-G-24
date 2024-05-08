@@ -83,8 +83,9 @@ class CommissionTemplateUpdateView(TemplateView):
         data['jobs'] = commission_jobs
         return data 
     
-    def get_success_url(self):
-        return reverse_lazy('commissions:commission_list')
+    def get_success_url(self, pk):
+
+        return reverse('commissions:commission_detail', kwargs={'pk':pk})
     
     def form_valid(self, request, form, job_formset, cur_commission):
         for job_form in job_formset:
@@ -92,11 +93,10 @@ class CommissionTemplateUpdateView(TemplateView):
                         continue
             job_form.instance.commission_id = cur_commission.id
         job_formset.save()
-        return redirect(self.get_success_url())
+        return redirect(self.get_success_url(cur_commission.id))
     
-    def form_invalid(self, form, job_formset):
-        messages.error(self.request, "Please fill in empty data")
-        return self.render_to_response(self.get_context_data(form=form, new_jobset=job_formset, with_error=1))
+    def form_invalid(self, form, job_formset, error):
+        return self.render_to_response(self.get_context_data(form=form, new_jobset=job_formset, with_error=error))
 
     def post(self, request, *args, **kwargs):
         ctx = self.get_context_data(**kwargs)
@@ -109,8 +109,11 @@ class CommissionTemplateUpdateView(TemplateView):
             cur_job = ctx['jobs'][counter]
             cur_job.role = test_dict['role'][counter]
             cur_job.manpower_required = test_dict['manpower_required'][counter]
-            counter += 1
             cur_job.save()
+            if cur_job.current_manpower > int(test_dict['manpower_required'][counter]):
+                return self.form_invalid(commission_form, create_formset, 2)
+
+            counter += 1
         
         counter = 0
         while counter < len(ctx['job_applications']):
@@ -132,13 +135,13 @@ class CommissionTemplateUpdateView(TemplateView):
                     if 'role' not in form.cleaned_data.keys() and 'manpower_required' not in form.cleaned_data.keys():
                         continue
                     if 'role' not in form.cleaned_data.keys() or 'manpower_required' not in form.cleaned_data.keys():
-                        return self.form_invalid(commission_form, formset)
+                        return self.form_invalid(commission_form, formset, 1)
                 else:
-                    return self.form_invalid(commission_form, formset)
+                    return self.form_invalid(commission_form, formset, 1)
                 
             return self.form_valid(request, commission_form, formset, cur_commission)
         
-        return self.form_invalid(commission_form, formset)
+        return self.form_invalid(commission_form, formset, 1)
         
 class CommissionTemplateDetailView(TemplateView):
     template_name = 'commission_detail.html'
@@ -252,15 +255,17 @@ class CommissionCreateViewTemplate(TemplateView):
         if 'job_formset' in kwargs.keys():
             job_formset = kwargs['job_formset']
         
-        if 'with_error' in kwargs.keys():
-            error = kwargs['with_error']
+        if 'with_error_incomplete' in kwargs.keys():
+            error = kwargs['with_error_incomplete']
+
         data['form'] = commission_form
         data['job_formset'] = job_formset
         data['with_error'] = error
         return data
     
-    def get_success_url(self):
-        return reverse_lazy('commissions:commission_list')
+    def get_success_url(self, pk):
+
+        return reverse('commissions:commission_detail', kwargs={'pk':pk})
     
     def form_valid(self, request, form, job_formset):
         form.instance.created_by = request.user.Profile     
@@ -270,7 +275,7 @@ class CommissionCreateViewTemplate(TemplateView):
                         continue
             job_form.instance.commission_id = form.instance.id
         job_formset.save()
-        return redirect(self.get_success_url())
+        return redirect(self.get_success_url(form.instance.id))
     
     def form_invalid(self, form, job_formset):
         return self.render_to_response(self.get_context_data(form=form, job_formset=job_formset, with_error=1))

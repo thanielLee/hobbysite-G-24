@@ -36,6 +36,8 @@
 
 {% if with_error == 1 %} 
     Please fill in or clear the incomplete job fields
+{% elif with_error == 2 %}
+    Input Manpower less than current manpower of job
 {% endif %}
 {% block scripts %}
     <script>
