@@ -173,11 +173,12 @@ class CommissionTemplateDetailView(TemplateView):
         job_set = Job.objects.filter(commission=commission)
         formset = formset_factory(JobApplicationForm)
         job_applied_by_user = []
+        print(commission.get_status_display())
 
         STATUS_CHOICES = {
-            0: "Pending",
-            1: "Accepted",
-            2: "Rejected"
+            "0": "Pending",
+            "1": "Accepted",
+            "2": "Rejected"
         }
         
         for job in job_set:
@@ -185,14 +186,14 @@ class CommissionTemplateDetailView(TemplateView):
             total_manpower_required += job.manpower_required
             current_job_manpower = 0
             for job_application in job_application_set:
-                if job_application.application_status == 1: 
+                if job_application.application_status == "1": 
                     commission_current_manpower += 1
                     current_job_manpower += 1
             
             job.modify_current_manpower(current_job_manpower)
             job.open_manpower =  job.manpower_required - current_job_manpower
             if job.open_manpower == 0:
-                job.status = 2      
+                job.status = "2"      
         
         test = []
         for job in job_set:
@@ -216,7 +217,7 @@ class CommissionTemplateDetailView(TemplateView):
         data['jobs_applied_by_user'] = job_applied_by_user
         data['status_choice'] = STATUS_CHOICES
         if total_manpower_required-commission_current_manpower == 0:
-            commission.status = 2
+            commission.status = "2"
         return data
 
     def form_valid(self, form):
