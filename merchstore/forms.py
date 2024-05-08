@@ -1,19 +1,20 @@
-from django import forms
-from .models import Transaction, Product
+from typing import Any
 
-class TransactionForm(forms.ModelForm):
-    class Meta:
-        model = Transaction
-        fields = ['product', 'amount']
+from django import forms
+
+from user_management.models import Profile
+
+from .models import Product
+
 
 class ProductForm(forms.ModelForm):
+
+    owner = forms.ModelChoiceField(required=False, queryset=Profile.objects)
+
     class Meta:
         model = Product
-        fields = ['name', 'producttype', 'description', 'price', 'stock', 'status']
-        widgets = {
-            'status': forms.Select(choices=Product.STATUS_CHOICES),
-            'producttype': forms.Select()
-        }
+        fields = "__all__"
 
-    def __init__(self, *args, **kwargs):
-        super(ProductForm, self).__init__(*args, **kwargs)
+
+class TransactionForm(forms.Form):
+    amount = forms.IntegerField(min_value=0)
